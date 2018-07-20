@@ -782,7 +782,6 @@ The  ROC is used to summarize the trade-off between sensitivity and specificity.
 If more than two classes are available a multi-class ROC analysis is needed. Several solutions have been proposed for multi-class ROC. Some of the proposed reduced the multi-class problem to a set of binary problems. The approach used for a multi-class ROC analysis in this paper is called one-against-all ~\citep{allwein2000reducing}.
 
 
-
 \begin{figure}[hbpt]
 \includegraphics[width=.8\linewidth]{figure/fish31.png}
 \caption{Performance comparison tab of the web app. ROC curves displaying sensitivity against specificity for the classes are shown, along with the OOB error by number of trees used to build the forest, and overall variable importance. Displays are shown for the PPF and RF, for comparison purposes. Users can select a class to focus on, using the text entry box. \label{tab3}}
