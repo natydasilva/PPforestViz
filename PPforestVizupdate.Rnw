@@ -716,6 +716,7 @@ side(ppf, ttl="")
 \end{figure}
 
 \section{Interactive web app }\label{app}
+%Todo the PPforestViz pakage
 
 Interaction is added to the plots described in Section \ref{visen} and other plots, and they are organized into an interactive web app using \pkg{shiny}~\citep{chang11shiny} for exploring the ensemble model. The app is organized into three tabs: individual cases; models; and performance comparison, to provide a model diagnostic tool. Interaction is provided as mouse-over labeling, mouse-click selection, and brushing, with results linked across multiple plots. The app takes advantage of new tools provided in the \pkg{plotly}~\citep{plotly} package, developed as a part of Sievert's PhD thesis research~\citep{sievertthesis}.
 
@@ -752,6 +753,9 @@ Two alternatives can be selected in shiny to draw the parallel coordinate plot: 
 
 
 \subsection{Models}
+%I have to modify the selecction of the tree instead to select the tree based on the importance variable will be better select the tree based on the ooberror. Move the boxplot and select using thisone.
+%Include some alternative visualization fro Random forest
+%This is the oly tabset that can not be reproduced using RandomForest because we don't have the same information than in PPforest. Also doesn't make sense present the 1D projection for each of the node partitions.
 
 This second tab in the app focuses on teasing apart the forest to examine the qualities of each tree. For each tree, information on the variable importance, the projections used at each node, and the OOB error is available.  The data feeding into this tab is a list of models along with the original data frame.
 The tree id is displayed when we mouse over the jittered side-by-side plot. This information is useful because, based on the accuracy, some trees could be pruned from the forest outside of the app.
