@@ -40,7 +40,7 @@
 \maketitle
 
 \section*{Abstract}
-This paper describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this paper, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest, but could be more broadly applied to other bagged ensembles. Interactive graphics are built in \pkg{R} using the \pkg{ggplot2}, \pkg{plotly}, and \pkg{shiny} packages.
+This article describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this article, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest, but could be more broadly applied to other bagged ensembles. Interactive graphics are built in \pkg{R} using the \pkg{ggplot2}, \pkg{plotly}, and \pkg{shiny} packages.
 
 \section{Introduction}
 The random forest (RF) algorithm~\citep{breiman1996bagging} was one of the first ensemble classifiers developed. It combines the predictions from individual classification and regression trees (CART)~\citep{breiman1984cl} built by bagging observations~\citep{breiman1996bagging}. It also samples variables at each tree node. These produce diagnostics in the form of uncertainty in predictions for each observation, importance of variables for the prediction, predictive error for future samples based on out-of-bag (OOB) case predictions, and similarity of observations based on how often they group together in the trees.
@@ -52,12 +52,15 @@ A conceptual framework for model visualization can be summarized in three strate
 There has been some, but not a lot of, research on visualizing classification models.
 \cite{urbanek2002exploring} presents interactive tree visualization implemented in the java software called \pkg{KLIMT} that include zooming, selection, multiple views, interactive pruning, and tree construction as well as the interactive analysis of forests of trees using treemaps. \cite{cutler15raft} developed a java package called \pkg{RAFT} to visualize a forest classifier, that included variable selection, parallel coordinate plots, heat maps, and scatter plots of some diagnostics. Linking between plots is limited. \cite{quach2012interactive} presents interactive forest visualization using the R package \pkg{iPlots eXtreme} \citep{urbanek2011iplots} where several displays are shown in one window with some linking between them available. \cite{Silva2016} describes visualizing components of an ensemble classifier.
 
-This paper describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit forests (PPF)~\citep{dasilvappforest} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in \pkg{R}\citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that help the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model and ensemble summaries.
-
-The paper is structured as follows.  Section \ref{key} describes the ensemble components to be accessed.  Section \ref{visen} maps the ensemble components to the visual elements. The web app is described in \ref{app} and further work is discussed in section \ref{fur}.
+This article describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit random forests (PPF)~\citep{da2021projection} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in \pkg{R}\citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that help the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model and ensemble summaries.
 
 
-\section{Diagnostics in forest classifiers}\label{key}
+% Should I include some references about interpretable machine learning
+
+The article is structured as follows.  Section \ref{key} describes the ensemble components to be accessed.  Section \ref{visen} maps the ensemble components to the visual elements. The web app is described in \ref{app} and further work is discussed in section \ref{fur}.
+
+
+\section{Diagnostics in Forest Classifiers}\label{key}
 
 The diagnostics typically available are:
 
@@ -70,13 +73,13 @@ The diagnostics typically available are:
 
 In addition to these overall ensemble statistics, each component model has its own diagnostics, measuring error, variables utilized, and class predictions. Visualization will enable the individual models to be examined, relate these to the data and their contribution to the ensemble.
 
-\section{Mapping ensemble diagnostics to visual components}~\label{visen}
+\section{Mapping Ensemble Diagnostics to Visual Components}~\label{visen}
 
 This section describes the mapping of diagnostics to visualizations. These are illustrated using the Australian crabs data~\citep{CM74}. The data has 200 cases, 5 predictors and 4 classes (combinations of species and sex, blue male, blue female, orange male and orange female). The predictors are: FL (the size of the frontal lobe length, in mm), RW (rear width, in mm), CL (length of mid-line of the carapace, in mm), CW (maximum width of carapace, in mm), BD (depth of the body; for females, measured after displacement of the abdomen, in mm). This is old data, but it provides a good illustration of the visual methods.
 
-\subsection{Individual models: PPtree}
+\subsection{Individual Models: PPtree}
 
-The PPF is composed of individual projection pursuit trees. Figure \ref{pptree} shows a visual ensemble of plots of a tree model on the crab data. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
+The PPF is composed of individual projection pursuit trees. Figure \ref{pptreeviz1} shows a visual ensemble of plots of a tree model on the crab data. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
 The package \pkg{PPtreeViz} provides visual tools to diagnose a PPtree model. The PPF builds on these and modifies a little. The PPtree model is simpler than a regular classification tree because the classes are mostly separated by combinations of variables -- just three projections are needed to see the differences between the four classes.
 
 <<pkg, echo=FALSE, message=FALSE, warning=FALSE>>=
@@ -297,7 +300,7 @@ plot(ppf[["output.trees"]][[tree]], main = "", font.size = 12)
     \label{pptreeviz1}}
 \end{figure}
 
-\subsection{Variable importance}
+\subsection{Variable Importance}
 
 The PPF algorithm calculates variable importance in two ways: (1) permuted importance using accuracy,  and (2) importance based on projection coefficients of standardized variables.
 
@@ -460,11 +463,11 @@ p3 <-  d_boundary(3)
 \end{figure}
 
 
-\subsection{Similarity of cases}
+\subsection{Similarity of Cases}
 
 For each tree, every pair of observations can be in the same terminal node or not. Tallying this up across all trees in a forest gives the proximity matrix, an $n\times n$ matrix of the proportion of trees that the pair share a terminal node. It can be considered a similarity matrix.
 
-Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations. MDS transforms the data set into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the 3D space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
+Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the 3D space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
 
 
 \begin{figure}[hbpt]
@@ -555,7 +558,7 @@ grid_arrange_shared_legend(p12, p13, p23, ncol=3, nrow=1)
 \end{figure}
 
 
-\subsection{Uncertainty of cases}
+\subsection{Uncertainty of Cases}
 
 The vote matrix ($n \times G$) contains the proportion of times each observation was classified to each class while oob. Two approaches to visualize the vote matrix information are used.
 
@@ -715,7 +718,7 @@ side(ppf, ttl="")
 \label{sideby}
 \end{figure}
 
-\section{Interactive web app }\label{app}
+\section{Interactive Web App }\label{app}
 %Todo the PPforestViz pakage
 
 Interaction is added to the plots described in Section \ref{visen} and other plots, and they are organized into an interactive web app using \pkg{shiny}~\citep{chang11shiny} for exploring the ensemble model. The app is organized into three tabs: individual cases; models; and performance comparison, to provide a model diagnostic tool. Interaction is provided as mouse-over labeling, mouse-click selection, and brushing, with results linked across multiple plots. The app takes advantage of new tools provided in the \pkg{plotly}~\citep{plotly} package, developed as a part of Sievert's PhD thesis research~\citep{sievertthesis}.
@@ -726,7 +729,7 @@ As \cite{sievertthesis} describes, one of the biggest difficulties for the app i
 
 The fishcatch data~\citep{fishcatch} is used to illustrate the shiny app characteristics. It contains 159 observations, with 6 physical measurement variables, and  7 types of fish, all caught from the same lake (Laengelmavesi) near Tampere in Finland. There are 35 bream, 11 parkki, 56 perch, 17 pike, 20 roach, 14 smelt and 6 whitewish. The shiny app showing fishcatch data can be accessed at \url{https://natydasilva.shinyapps.io/shinyppforest}.
 
-\subsection{Individual cases}
+\subsection{Individual Cases}
 
 This tab is designed to examine uncertainty in the classification of observations and to explore the similarity between pairs of observations. The data feeding the display is an $n\times p$ data frame, containing the original data, the model statistics generated from the full $n\times G$ vote matrix along with its generalized ternary coordinates, and the first two MDS projections of the proximity matrix.
 Figure \ref{tab1} shows the arrangement of plots.
@@ -778,12 +781,12 @@ The data source is a \pkg{PPforest} object. Interaction is driven by the variabl
 \label{tab2diag}
 \end{figure}
 
-\subsection{Performance comparison}
+\subsection{Performance Comparison}
 
 The third tab (Figure \ref{tab3}) examines the PPF fit and compares the result with a RF fit. There are four displays for each type of model: (1) Variable importance for all trees in the forest (same as in the models tab), (2) an receiver operating characteristic curve (ROC) curve comparing sensitivity and specificity for each class, (3) OOB error by number of trees to assess complexity, (4) overall variable importance. There is very little interaction on this tab. Users can select to focus on a subset of classes or choose the importance measure to show. Being able to focus on class can help to better understand how well the model performs across classes and the focus can be especially useful for unbalanced data. Examining the OOB error by trees enables an assessment of how few trees might be used to provide an equally accurate prediction of future data.
 
 The  ROC is used to summarize the trade-off between sensitivity and specificity. The plot shows the sensitivity and specificity when a parameter of classifier is varied \citep{trevor2011elements}. The specificity and sensitivity was computed with the \pkg{pROC} package.
-If more than two classes are available a multi-class ROC analysis is needed. Several solutions have been proposed for multi-class ROC. Some of the proposed reduced the multi-class problem to a set of binary problems. The approach used for a multi-class ROC analysis in this paper is called one-against-all ~\citep{allwein2000reducing}.
+If more than two classes are available a multi-class ROC analysis is needed. Several solutions have been proposed for multi-class ROC. Some of the proposed reduced the multi-class problem to a set of binary problems. The approach used for a multi-class ROC analysis in this article is called one-against-all ~\citep{allwein2000reducing}.
 
 
 \begin{figure}[hbpt]
