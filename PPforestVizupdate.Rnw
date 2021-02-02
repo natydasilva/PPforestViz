@@ -43,7 +43,7 @@
 This article describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this article, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest, but could be more broadly applied to other bagged ensembles. Interactive graphics are built in \pkg{R} using the \pkg{ggplot2}, \pkg{plotly}, and \pkg{shiny} packages.
 
 \section{Introduction}
-The random forest (RF) algorithm~\citep{breiman1996bagging} was one of the first ensemble classifiers developed. It combines the predictions from individual classification and regression trees (CART)~\citep{breiman1984cl} built by bagging observations~\citep{breiman1996bagging}. It also samples variables at each tree node. These produce diagnostics in the form of uncertainty in predictions for each observation, importance of variables for the prediction, predictive error for future samples based on out-of-bag (OOB) case predictions, and similarity of observations based on how often they group together in the trees.
+The random forest (RF) algorithm~\citep{breiman1996bagging} was one of the first ensemble classifiers developed. It combines the predictions from individual classification and regression trees (CART)~\citep{breiman1984cl} built by bagging observations~\citep{breiman1996bagging}. It also samples variables at each tree node. These produce diagnostics in the form of uncertainty in predictions for each observation, importance of variables for the prediction, predictive error for future samples based on out-of-bag (oob) case predictions, and similarity of observations based on how often they group together in the trees.
 
 Ensemble classifiers have grown in popularity~\citep{dietterish00}~\citep{talbot09}, and the basic ideas behind the random forest can be applied to virtually any type of model. The benefits for classification are reduced variability in predictive error, and the suite of diagnostics provides the potential for better understanding the class structure in the high-dimensional data space. The use of visualization on these diagnostics, in association with multivariate data plots, completes the process to support a better understanding of the underlying problem.
 
@@ -65,7 +65,7 @@ The article is structured as follows.  Section \ref{key} describes the ensemble 
 The diagnostics typically available are:
 
 \begin{itemize} \itemsep 0in
-  \item {\em Out-of-bag error:} For each model in the ensemble, some cases of the original data are not used. Predicting the response for these cases gives a better estimate for the error of the model with future data. The OOB error rate is a measure for each model that is combined in the ensemble and is used to provide the overall error of the ensemble.
+  \item {\em Out-of-bag error:} For each model in the ensemble, some cases of the original data are not used. Predicting the response for these cases gives a better estimate for the error of the model with future data. The oob error rate is a measure for each model that is combined in the ensemble and is used to provide the overall error of the ensemble.
   \item {\em Uncertainty measure for each observation:} Across individual (classification) models we can compute the proportion of times that a case is predicted to be each class. If a case is always predicted to be the true class, there is no uncertainty about an observation. Cases that are proportionately predicted to be multiple classes indicate difficult to classify observations. They may be important by indicating neighborhoods of the data space that would benefit from a more complex model, or more simply, they may be errors in measurements in the data.
   \item {\em Variable importance:} Each model uses samples of variables. So that, the accuracy of the models can be compared when the variable is included or omitted. There are several versions of statistics that use this to provide a measure of the variable importance for prediction.
   \item {\em Similarity measure for pairs of observations:} In each model, each pair of observations will be either in the same terminal node or not. This is used to compute a proximity matrix.  Cluster analysis on this matrix  can be used to follow up the classification to assess the original labeling. It may suggest improvements or mistakes in original labels.
@@ -302,40 +302,22 @@ plot(ppf[["output.trees"]][[tree]], main = "", font.size = 12)
 
 \subsection{Variable Importance}
 
-The PPF algorithm calculates variable importance in two ways: (1) permuted importance using accuracy,  and (2) importance based on projection coefficients of standardized variables.
+The PPF algorithm calculates variable importance in three ways: permuted importance using accuracy,  and two importance measures based on projection coefficients on standardized variables.
 
-The permuted variable importance is comparable with the measure defined in the classical random forest algorithm. It is computed using the OOB sample for the tree $k\;\;(B^{(k)})$ for each $X_j$ predictor variable.  Then the
-permuted importance of the variable $X_j$ in the tree $k$ can be defined as:
-
+The first importance measure is comparable with the measure defined in the classical random forest algorithm. Importance variable is computed based on the oob cases for the tree $k\;\;(O_k)$ for each $j$ predictor variable.  
+Permuted importance of the variable $j$ in the tree $k$ is defined as:
+  
 \[
-IMP^{(k)}(X_j) = \frac{\sum_{i \in B^{(k)} } I(y_i=\hat y_i^{(k)})-I(y_i=\hat y_{i,P_j}^{(k)})}{|B^{(k)}|}
+VI^{(1)} _{jk} = \frac{\sum_{i \in O_k } I(y_i=\hat y_{ik})-I(y_i=\tilde y_{ik})}{\# O_k}
 \]
 
-\noindent where $\hat y_i^{(k)}$
-is the predicted class for observation $i$ in tree $k$ and $y_{i,P_j}^{(k)}$ is the predicted class for observation $i$ in tree $k$ after permuting the values for variable $X_j$. The global permuted importance measure is the average importance over all the trees in the forest.
-This measure is based on comparing the accuracy of classifying OOB observations using the true class with permuted (nonsense) class.
+\noindent where $\hat y_{ik}$ is the predicted class for the observation $i$ in the tree $k$, and $\tilde y_{ik}$ is the predicted class for the observation $i$ in the tree $k$ after permuting the values for variable $j$. The global permuted importance measure is the average importance over all the trees in the forest. This measure is based on comparing the accuracy of classifying oob observations using the true class with permuted (nonsense) class.
 
-For the second importance measure, the coefficients of each projection are examined. The magnitude of these values indicates importance, if the variables have been standardized. The variable importance for a single tree is computed by a weighted sum of the absolute values of the coefficients across nodes. The weights takes the number of classes in each node into account ($cl_{nd}$)~\citep{lee2013pptree}.
-Then the importance of the variable $X_j$ in the PPtree $k$ can be defined as:
+The coefficients of each projection are examined to define the other two importance measures. If the variables have been standardized, the magnitude of these values indicates importance. For a single PPtree the variable importanceis is computed by a weighted sum of the absolute values of the coefficients across node, then the weights take the number of classes in each node into account($G_s$)~\citep{lee2013pptree}.
 
-\[
-  IMP_{pptree}^{(k)}(X_j)=\sum_{nd = 1}^{nn}\frac{|\alpha_{nd}^{(k)}|}{cl_{nd} }
-\]
+The global variable importance in a PPforest then can be defined in different ways. One way is to average the variable importance from each PPtree across all the trees in the forest. Alternatively, can be computed as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree, for more details ~\cite{da2021projection}.
 
-Where $\alpha_{nd}^{(k)}$ is the projected coefficient for node $nd$, variable $k$, and $nn$ the total number of node partitions in the tree $k$.
-
-The global variable importance in a PPforest then can be defined in different ways. The most intuitive is the average variable importance from each PPtree across all the trees in the forest.
-
-
-\[
-IMP_{ppforest1}(X_j)=\frac{\sum_{k=1}^K IMP_{pptree}^{(k)}(X_j)}{K}
-\]
-Alternatively we have defined a global importance measure for the forest as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree. The weights are based on the projection pursuit indexes in each node ($Ix_{nd}$), and 1-(OOB-error of each tree)($acc_k$).
-
-\[IMP_{ppforest2}(X_j)=\frac{\sum_{k=1}^K acc_k \sum_{nd = 1}^{nn}\frac{Ix_{nd}|\alpha_{nd}^{(k)}|}{nn }}{K}
-\]
-
-Figure \ref{impotree} shows the absolute projection coefficient of the top three nodes for all the trees in a forest model. This information is displayed by a side-by-side jittered dot plot. The red dots correspond to the absolute coefficient values for the tree model of Figure \ref{pptree}. The forest was built using random samples of two variables for each node, hence there are two coefficients for each node. At node 1, BD has a high value and CW contributes much less. The scatterplot at right shows these two variables and the resulting boundary between groups that this would produce. Node 2 uses CL and RW, and RW contributes the most to the separation. The plot at right shows the boundary that is induced. Node 3 uses FL and RW, and this is a much more even contribution by the two variables.
+Figure \ref{impotree} shows the absolute projection coefficient of the top three nodes for all the trees in a forest model. This information is displayed by a side-by-side jittered dot plot. The red dots correspond to the absolute coefficient values for the tree model of Figure \ref{pptreeviz1}. The forest was built using random samples of two variables for each node, hence there are two coefficients for each node. At node 1, BD has a high value and CW contributes much less. The scatterplot at right shows these two variables and the resulting boundary between groups that this would produce. Node 2 uses CL and RW, and RW contributes the most to the separation. The plot at right shows the boundary that is induced. Node 3 uses FL and RW, and this is a much more even contribution by the two variables.
 For each tree in the forest, different decision rules are defined; the resulting boundaries on the previous plots are based on Rule 1 $= \frac{m_1}{2} + \frac{m_2}{2} $, where $m_1$ and $m_2$ are the mean of the left and right groups at each node.
 
 \begin{figure}[hbpt]
@@ -459,7 +441,7 @@ p3 <-  d_boundary(3)
 
 
 @
-\caption{Visualising the variable importance of all the trees in the forest, for three nodes. Each node of each tree has an importance value for each variable. The values for the whole forest are displayed using a side-by-side jittered dot plot. The importance values are the absolute values of the projection coefficients. The red points correspond to these values for the tree shown in Figure \ref{pptree}. Two variables are randomly selected at each node for creating the best projection, and split. The plots are right show the variables used and the split made at each of the nodes of this tree.  \label{impotree}}
+\caption{Visualising the variable importance of all the trees in the forest, for three nodes. Each node of each tree has an importance value for each variable. The values for the whole forest are displayed using a side-by-side jittered dot plot. The importance values are the absolute values of the projection coefficients. The red points correspond to these values for the tree shown in Figure \ref{pptreeviz1}. Two variables are randomly selected at each node for creating the best projection, and split. The plots are right show the variables used and the split made at each of the nodes of this tree.  \label{impotree}}
 \end{figure}
 
 
@@ -467,7 +449,7 @@ p3 <-  d_boundary(3)
 
 For each tree, every pair of observations can be in the same terminal node or not. Tallying this up across all trees in a forest gives the proximity matrix, an $n\times n$ matrix of the proportion of trees that the pair share a terminal node. It can be considered a similarity matrix.
 
-Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the 3D space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
+Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the three dimensional space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
 
 
 \begin{figure}[hbpt]
@@ -554,7 +536,7 @@ p23 <-  ggplot2::ggplot(data = df) +
 grid_arrange_shared_legend(p12, p13, p23, ncol=3, nrow=1)
 
   @
-\caption{Examining similarity between cases, using pairwise plots of multidimensional scaling into 3D. It can be seen that most cases are grouped closely with their class, and particularly that the two species are distinct. There is more confusion of cases between the sexes. \label{prox1}}
+\caption{Examining similarity between cases, using pairwise plots of multidimensional scaling into three dimensional. It can be seen that most cases are grouped closely with their class, and particularly that the two species are distinct. There is more confusion of cases between the sexes. \label{prox1}}
 \end{figure}
 
 
@@ -562,9 +544,9 @@ grid_arrange_shared_legend(p12, p13, p23, ncol=3, nrow=1)
 
 The vote matrix ($n \times G$) contains the proportion of times each observation was classified to each class while oob. Two approaches to visualize the vote matrix information are used.
 
-A ternary plot is a triangular diagram used to display compositional data with three components. More generally, compositional data can have any number of components, say $p$, and hence is constrained to a $(p-1)$-D simplex in $p$-space. The vote matrix is an example of compositional data with $G$ components.
+A ternary plot is a triangular diagram used to display compositional data with three components. More generally, compositional data can have any number of components, say $p$, and hence is constrained to a $(p-1)$ dimensional simplex in $p$-space. The vote matrix is an example of compositional data with $G$ components.
 
-With G classes, the ternary plot idea is generalized to a $(G-1)-D$ simplex~\citep{sutherland2000orca, schloerke}. This is one of the approaches used to visualize the vote matrix.
+With G classes, the ternary plot idea is generalized to a $(G-1)- dimensional$ simplex~\citep{sutherland2000orca, schloerke}. This is one of the approaches used to visualize the vote matrix.
 
 For the crab data, $G=4$ and the generalized ternary plot will be a tetrahedron. The  \pkg{tourr} package~\citep{wickham2011tourr} can be used to view it (e.g. \url{https://vimeo.com/170522736}).
 
@@ -685,11 +667,11 @@ grid.arrange(t1, t2, t3, ncol = 3)
 
 
 @
-\caption{Generalized ternary plot ((G-1)-D simplex, here it is a tetrahedron) representation of the vote matrix for four classes. The tetrahedron is shown pairwise. Each point corresponds to one observation and color is the true class. This is close but not a perfect classification, since the colors are concentrated in the corners and there are some mixed colors in each corner.}
+\caption{Generalized ternary plot ((G-1) dimensional simplex, here it is a tetrahedron) representation of the vote matrix for four classes. The tetrahedron is shown pairwise. Each point corresponds to one observation and color is the true class. This is close but not a perfect classification, since the colors are concentrated in the corners and there are some mixed colors in each corner.}
 \label{tetra}
 \end{figure}
 
-Because visualizing the vote matrix with a $(G-1)$-D tetrahedron requires dynamic graphics, a low-dimensional option is also provided. For each class, each case has a value between 0-1. A side-by-side jittered dotplot is used for the display, where class is displayed on one axis and proportion is displayed on the other. For each dotplot, the ideal arrangement is that points are concentrated at 0 or 1 and only at 1 for their true class. This data is close to the ideal but not perfect, e.g. there are a few blue male crabs (orange) that are frequently predicted to be blue females (green), and a few blue female crabs predicted to be another class.
+Because visualizing the vote matrix with a $(G-1)$ dimensional tetrahedron requires dynamic graphics, a low-dimensional option is also provided. For each class, each case has a value between 0-1. A side-by-side jittered dotplot is used for the display, where class is displayed on one axis and proportion is displayed on the other. For each dotplot, the ideal arrangement is that points are concentrated at 0 or 1 and only at 1 for their true class. This data is close to the ideal but not perfect, e.g. there are a few blue male crabs (orange) that are frequently predicted to be blue females (green), and a few blue female crabs predicted to be another class.
 
 \begin{figure}[hbpt]
 \centering
@@ -760,10 +742,10 @@ Two alternatives can be selected in shiny to draw the parallel coordinate plot: 
 %Include some alternative visualization fro Random forest
 %This is the oly tabset that can not be reproduced using RandomForest because we don't have the same information than in PPforest. Also doesn't make sense present the 1D projection for each of the node partitions.
 
-This second tab in the app focuses on teasing apart the forest to examine the qualities of each tree. For each tree, information on the variable importance, the projections used at each node, and the OOB error is available.  The data feeding into this tab is a list of models along with the original data frame.
+This second tab in the app focuses on teasing apart the forest to examine the qualities of each tree. For each tree, information on the variable importance, the projections used at each node, and the oob error is available.  The data feeding into this tab is a list of models along with the original data frame.
 The tree id is displayed when we mouse over the jittered side-by-side plot. This information is useful because, based on the accuracy, some trees could be pruned from the forest outside of the app.
 
-Figure \ref{tab2} is a screenshot of the models tab. There are five plots, with varying levels of interaction: (1) a jittered side-by-side dotplot showing variable importance for the top three nodes of all trees in the forest, (2) a static display of one tree, (3) a boxplot of OOB error for all trees, (4) a faceted density plot of projected data at each node of the tree, with split point indicated by a vertical line, and (5) a mosaic plot showing the confusion matrix for each node of the tree.  The interaction is driven from the variable importance plot -- when the user selects a point in that display, the corresponding tree density displays and mosaic plots are drawn. The tree plot from the \pkg{PPtreeViz} is used to visualize the selected tree structure. Also highlighted are the variable importance values for each variable for each of the top three nodes and the OOB error value for the tree on the boxplot.
+Figure \ref{tab2} is a screenshot of the models tab. There are five plots, with varying levels of interaction: (1) a jittered side-by-side dotplot showing variable importance for the top three nodes of all trees in the forest, (2) a static display of one tree, (3) a boxplot of oob error for all trees, (4) a faceted density plot of projected data at each node of the tree, with split point indicated by a vertical line, and (5) a mosaic plot showing the confusion matrix for each node of the tree.  The interaction is driven from the variable importance plot -- when the user selects a point in that display, the corresponding tree density displays and mosaic plots are drawn. The tree plot from the \pkg{PPtreeViz} is used to visualize the selected tree structure. Also highlighted are the variable importance values for each variable for each of the top three nodes and the oob error value for the tree on the boxplot.
 
 \begin{figure}[hbpt]
 \centering
@@ -783,7 +765,7 @@ The data source is a \pkg{PPforest} object. Interaction is driven by the variabl
 
 \subsection{Performance Comparison}
 
-The third tab (Figure \ref{tab3}) examines the PPF fit and compares the result with a RF fit. There are four displays for each type of model: (1) Variable importance for all trees in the forest (same as in the models tab), (2) an receiver operating characteristic curve (ROC) curve comparing sensitivity and specificity for each class, (3) OOB error by number of trees to assess complexity, (4) overall variable importance. There is very little interaction on this tab. Users can select to focus on a subset of classes or choose the importance measure to show. Being able to focus on class can help to better understand how well the model performs across classes and the focus can be especially useful for unbalanced data. Examining the OOB error by trees enables an assessment of how few trees might be used to provide an equally accurate prediction of future data.
+The third tab (Figure \ref{tab3}) examines the PPF fit and compares the result with a RF fit. There are four displays for each type of model: (1) Variable importance for all trees in the forest (same as in the models tab), (2) an receiver operating characteristic curve (ROC) curve comparing sensitivity and specificity for each class, (3) oob error by number of trees to assess complexity, (4) overall variable importance. There is very little interaction on this tab. Users can select to focus on a subset of classes or choose the importance measure to show. Being able to focus on class can help to better understand how well the model performs across classes and the focus can be especially useful for unbalanced data. Examining the oob error by trees enables an assessment of how few trees might be used to provide an equally accurate prediction of future data.
 
 The  ROC is used to summarize the trade-off between sensitivity and specificity. The plot shows the sensitivity and specificity when a parameter of classifier is varied \citep{trevor2011elements}. The specificity and sensitivity was computed with the \pkg{pROC} package.
 If more than two classes are available a multi-class ROC analysis is needed. Several solutions have been proposed for multi-class ROC. Some of the proposed reduced the multi-class problem to a set of binary problems. The approach used for a multi-class ROC analysis in this article is called one-against-all ~\citep{allwein2000reducing}.
@@ -791,7 +773,7 @@ If more than two classes are available a multi-class ROC analysis is needed. Sev
 
 \begin{figure}[hbpt]
 \includegraphics[width=.8\linewidth]{figure/fish31.png}
-\caption{Performance comparison tab of the web app. ROC curves displaying sensitivity against specificity for the classes are shown, along with the OOB error by number of trees used to build the forest, and overall variable importance. Displays are shown for the PPF and RF, for comparison purposes. Users can select a class to focus on, using the text entry box. \label{tab3}}
+\caption{Performance comparison tab of the web app. ROC curves displaying sensitivity against specificity for the classes are shown, along with the oob error by number of trees used to build the forest, and overall variable importance. Displays are shown for the PPF and RF, for comparison purposes. Users can select a class to focus on, using the text entry box. \label{tab3}}
 \end{figure}
 \newpage
 
