@@ -1,4 +1,8 @@
-\documentclass[12pt]{article}
+\documentclass[smallextended,natbib]{svjour3}  
+\smartqed  % flush right qed marks, e.g. at end of proof
+\usepackage{graphicx}
+\usepackage{array,multirow,graphicx}
+\parskip 2mm           
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{natbib}
@@ -20,85 +24,55 @@
 \usepackage{authblk}
 \usepackage{pdfpages}
 \usepackage{fancyhdr}
-%\pdfminorversion=4
-% NOTE: To produce blinded version, replace "0" with "1" below.
-\newcommand{\blind}{0}
-
-
-\newcommand{\blA}{\mbox{\boldmath {\bf A}}}
-\newcommand{\blB}{\mbox{\boldmath {\bf B}}}
-\newcommand{\blW}{\mbox{\boldmath {\bf W}}}
-\newcommand{\blX}{\mbox{\boldmath {\bf X}}}
-\newcommand{\blM}{\mbox{\boldmath {\bf M}}}
-\newcommand{\blx}{\mbox{\boldmath {\bf x}}}
-\newcommand{\bla}{\mbox{\boldmath {\bf a}}}
-\newcommand{\blalpha}{\mbox{\boldmath {\alpha}}}
-
-% DON'T change margins - should be 1 inch all around.
-\addtolength{\oddsidemargin}{-.5in}%
-\addtolength{\evensidemargin}{-.5in}%
-\addtolength{\textwidth}{1in}%
-\addtolength{\textheight}{1.3in}%
-\addtolength{\topmargin}{-.8in}%
 
 \begin{document}
 
-\def\spacingset#1{\renewcommand{\baselinestretch}%
-{#1}\small\normalsize} \spacingset{1}
+\title{Interactive Graphics for Visually Diagnosing Forest Classifiers in R} 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\author{Natalia da Silva \and
+        Dianne Cook\and
+        Eun-Kyung Lee}
 
-\if0\blind
-{
-  \title{\bf Interactive Graphics for Visually Diagnosing Forest Classifiers in R}
-  \author{Natalia da Silva\hspace{.2cm}\\
-    Instituto de Estadística (IESTA), Universidad de la República\\
-    and \\
-    Dianne Cook \\
-    Department of Econometrics and Business Statistics, Monash University\\
-    and Eun-Kyung Lee\\
-    Department of Statistics,  Ewha Womans University }
-  \maketitle
-} \fi
+%\authorrunning{Short form of author list} % if too long for running head
 
-\if1\blind
-{
-  \bigskip
-  \bigskip
-  \bigskip
-  \begin{center}
-    {\LARGE\bf Interactive Graphics for Visually Diagnosing Forest Classifiers in R}
-\end{center}
-  \medskip
-} \fi
+\institute{Natalia da Silva \at
+              Instituto de Estadística (IESTA), Universidad de la República\\
+              \email{natalia.dasilva@fcea.edu.uy}
+           \and
+          Dianne Cook \at 
+          Department of Econometrics and Business Statistics, Monash University\\
+          \email{dicook@monash.edu}\and
+          Eun-Kyung Lee \at
+          Department of Statistics, Ewha Womans University\\
+          \email{lee.eunk@gmail.com}
+}
 
-\bigskip
+
+\date{Received: date / Accepted: date}
+
+\maketitle
+
 \begin{abstract}
-This article describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this article, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest, but could be more broadly applied to other bagged ensembles. Interactive graphics are built in R using the \verb#ggplot2 #, \verb#plotly#, and \verb#shiny# packages.
+This article describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this article, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest but could be more broadly applied to other bagged ensembles. Interactive graphics are built in R using the \texttt{ggplot2}, \texttt{plotly}, and \texttt{shiny} packages.
+\keywords{Statistical Visualization \and Interactive Visualization \and Interpretable Machine Learning \and Ensemble Model}
 \end{abstract}
 
-
-\noindent%
-{\it Keywords:} Statistical Visualization, Interactive Visualization, Interpretable Machine Learning, Ensemble Model. 
-\vfill
-
 \newpage
-\spacingset{1.5} % DON'T change the spacing!
+
 \section{Introduction}
 \label{sec:intro}
 
 The random forest (RF) algorithm~\citep{breiman1996bagging} was one of the first ensemble classifiers developed. It combines the predictions from individual classification and regression trees (CART)~\citep{breiman1984cl} built by bagging observations~\citep{breiman1996bagging}. It also samples variables at each tree node. These produce diagnostics in the form of uncertainty in predictions for each observation, importance of variables for the prediction, predictive error for future samples based on out-of-bag (oob) case predictions, and similarity of observations based on how often they group together in the trees.
 
-Ensemble classifiers have grown in popularity~\citep{dietterish00}~\citep{talbot09}, and the basic ideas behind the random forest can be applied to virtually any type of model. The benefits for classification are reduced variability in predictive error, and the suite of diagnostics provides the potential for better understanding the class structure in the high-dimensional data space. The use of visualization on these diagnostics, in association with multivariate data plots, completes the process to support a better understanding of the underlying problem.
+Ensemble classifiers have grown in popularity~\citep{dietterish00}~\citep{talbot09}, and the basic ideas behind the random forest can be applied to virtually any type of model. The benefits for classification are reduced variability in predictive error, and the suite of diagnostics provides the potential for better understanding the class structure in the high-dimensional data space. The use of visualization on these diagnostics, in association with multivariate data plots, completes the process to better understand the underlying problem.
 
-A conceptual framework for model visualization can be summarized in three strategies: (1) visualize the model in the data space, (2) look all members of a collection of a model and (3) explore the complete process of model fitting~\citep{wickham2015visualizing}. The first strategy is to explore how well the model captures the data characteristics (model in the data space), which contrasts with determining if the model assumptions hold (data in the model space). The second strategy is to look at a group of models instead of only the best model. This strategy can offer a broad understanding of the problem by comparing and contrasting possible models. The last strategy focuses on exploring the process of the model fitting in addition to the end result.
+A conceptual framework for model visualization can be summarized in three strategies: (1) visualize the model in the data space, (2) look at all members of a collection of a model, and (3) explore the complete process of model fitting~\citep{wickham2015visualizing}. The first strategy is to explore how well the model captures the data characteristics (the model in the data space), which contrasts with determining if the model assumptions hold (data in the model space). The second strategy is to look at a group of models instead of only the best model. This strategy can offer a broad understanding of the problem by comparing and contrasting possible models. The last strategy focuses on exploring the process of the model fitting in addition to the end result.
 
 There has been some, but not a lot of, research on visualizing classification models.
-\cite{urbanek2002exploring} presents interactive tree visualization implemented in the java software called \verb# KLIMT# that include zooming, selection, multiple views, interactive pruning, and tree construction as well as the interactive analysis of forests of trees using treemaps. \cite{cutler15raft} developed a java package called \verb# RAFT# to visualize a forest classifier, that included variable selection, parallel coordinate plots, heat maps, and scatter plots of some diagnostics. Linking between plots is limited. \cite{quach2012interactive} presents interactive forest visualization using the R package \verb# iPlots eXtreme # \citep{urbanek2011iplots} where several displays are shown in one window with some linking between them available. \cite{Silva2016} describes visualizing components of an ensemble classifier.
+\cite{urbanek2002exploring} presents interactive tree visualization implemented in the java software called \verb# KLIMT# that includes zooming, selection, multiple views, interactive pruning, and tree construction as well as the interactive analysis of forests of trees using treemaps. \cite{cutler15raft} developed a java package called \verb# RAFT# to visualize a forest classifier, that included variable selection, parallel coordinate plots, heat maps, and scatter plots of some diagnostics. Linking between plots is limited. \cite{quach2012interactive} presents interactive forest visualization using the R package \verb# iPlots eXtreme # \citep{urbanek2011iplots} where several displays are shown in one window with some linking between them available. \cite{Silva2016} describes visualizing components of an ensemble classifier.
 
-This article describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit random forests (PPF)~\citep{da2021projection} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in R \citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that help the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model and ensemble summaries.
-
+This article describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit random forests (PPF)~\citep{da2021projection} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in R \citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that helps the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model, and ensemble summaries.
 
 % Should I include some references about interpretable machine learning
 
@@ -111,16 +85,19 @@ The diagnostics typically available are:
 
 \begin{itemize} \itemsep 0in
   \item {\em Out-of-bag error:} For each model in the ensemble, some cases of the original data are not used. Predicting the response for these cases gives a better estimate for the error of the model with future data. The oob error rate is a measure for each model that is combined in the ensemble and is used to provide the overall error of the ensemble.
-  \item {\em Uncertainty measure for each observation:} Across individual (classification) models we can compute the proportion of times that a case is predicted to be each class. If a case is always predicted to be the true class, there is no uncertainty about an observation. Cases that are proportionately predicted to be multiple classes indicate difficult to classify observations. They may be important by indicating neighborhoods of the data space that would benefit from a more complex model, or more simply, they may be errors in measurements in the data.
+  
+  \item {\em Uncertainty measure for each observation:} Across individual (classification) models we can compute the proportion of times that a case is predicted to be each class. If a case is always predicted to be the true class, there is no uncertainty about an observation. Cases that are proportionately predicted to be multiple classes indicate difficulty to classify observations. They may be important by indicating neighborhoods of the data space that would benefit from a more complex model, or more simply, they may be errors in measurements in the data.
+  
   \item {\em Variable importance:} Each model uses samples of variables. So that, the accuracy of the models can be compared when the variable is included or omitted. There are several versions of statistics that use this to provide a measure of the variable importance for prediction.
-  \item {\em Similarity measure for pairs of observations:} In each model, each pair of observations will be either in the same terminal node or not. This is used to compute a proximity matrix.  Cluster analysis on this matrix  can be used to follow up the classification to assess the original labeling. It may suggest improvements or mistakes in original labels.
+  
+  \item {\em Similarity measure for pairs of observations:} In each model, each pair of observations will be either in the same terminal node or not. This is used to compute a proximity matrix.  Cluster analysis on this matrix can be used to follow up the classification to assess the original labeling. It may suggest improvements or mistakes in original labels.
 \end{itemize}
 
 In addition to these overall ensemble statistics, each component model has its own diagnostics, measuring error, variables utilized, and class predictions. Visualization will enable the individual models to be examined, relate these to the data and their contribution to the ensemble.
 
 \section{Mapping Ensemble Diagnostics to Visual Components}~\label{visen}
 
-This section describes the mapping of diagnostics to visualizations. These are illustrated using the Australian crabs data~\citep{CM74}. The data has 200 cases, 5 predictors and 4 classes (combinations of species and sex, blue male, blue female, orange male and orange female). The predictors are: FL (the size of the frontal lobe length, in mm), RW (rear width, in mm), CL (length of mid-line of the carapace, in mm), CW (maximum width of carapace, in mm), BD (depth of the body; for females, measured after displacement of the abdomen, in mm). This is old data, but it provides a good illustration of the visual methods.
+This section describes the mapping of diagnostics to visualizations. These are illustrated using the Australian crabs data~\citep{CM74}. The data has 200 cases, 5 predictors, and 4 classes (combinations of species and sex, blue male, blue female, orange male, and orange female). The predictors are: FL (the size of the frontal lobe length, in mm), RW (rear width, in mm), CL (length of mid-line of the carapace, in mm), CW (maximum width of carapace, in mm), BD (depth of the body; for females, measured after displacement of the abdomen, in mm). This is old data, but it provides a good illustration of the visual methods.
 
 \subsection{Individual Models: PPtree}
 
@@ -353,7 +330,7 @@ VI^{(1)} _{jk} = \frac{\sum_{i \in O_k } I(y_i=\hat y_{ik})-I(y_i=\tilde y_{ik})
 
 \noindent where $\hat y_{ik}$ is the predicted class for the observation $i$ in the tree $k$, and $\tilde y_{ik}$ is the predicted class for the observation $i$ in the tree $k$ after permuting the values for variable $j$. The global permuted importance measure is the average importance over all the trees in the forest. This measure is based on comparing the accuracy of classifying oob observations using the true class with permuted (nonsense) class.
 
-The coefficients of each projection are examined to define the other two importance measures. If the variables have been standardized, the magnitude of these values indicates importance. For a single PPtree the variable importanceis is computed by a weighted sum of the absolute values of the coefficients across node, then the weights take the number of classes in each node into account($G_s$)~\citep{lee2013pptree}.
+The coefficients of each projection are examined to define the other two importance measures. If the variables have been standardized, the magnitude of these values indicates importance. For a single PPtree the variable importance is computed by a weighted sum of the absolute values of the coefficients across nodes, then the weights take the number of classes in each node into account($G_s$)~\citep{lee2013pptree}.
 
 The global variable importance in a PPforest then can be defined in different ways. One way is to average the variable importance from each PPtree across all the trees in the forest. Alternatively, can be computed as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree, for more details ~\cite{da2021projection}.
 
@@ -481,7 +458,7 @@ p3 <-  d_boundary(3)
 
 
 @
-\caption{Visualising the variable importance of all the trees in the forest, for three nodes. Each node of each tree has an importance value for each variable. The values for the whole forest are displayed using a side-by-side jittered dot plot. The importance values are the absolute values of the projection coefficients. The red points correspond to these values for the tree shown in Figure \ref{pptreeviz1}. Two variables are randomly selected at each node for creating the best projection, and split. The plots are right show the variables used and the split made at each of the nodes of this tree.  \label{impotree}}
+\caption{Visualizing the variable importance of all the trees in the forest, for three nodes. Each node of each tree has an importance value for each variable. The values for the whole forest are displayed using a side-by-side jittered dot plot. The importance values are the absolute values of the projection coefficients. The red points correspond to these values for the tree shown in Figure \ref{pptreeviz1}. Two variables are randomly selected at each node for creating the best projection, and split. The plots at right show the variables used and the split made at each of the nodes of this tree.  \label{impotree}}
 \end{figure}
 
 
@@ -707,11 +684,11 @@ grid.arrange(t1, t2, t3, ncol = 3)
 
 
 @
-\caption{Generalized ternary plot ((G-1) dimensional simplex, here it is a tetrahedron) representation of the vote matrix for four classes. The tetrahedron is shown pairwise. Each point corresponds to one observation and color is the true class. This is close but not a perfect classification, since the colors are concentrated in the corners and there are some mixed colors in each corner.}
+\caption{Generalized ternary plot ((G-1) dimensional simplex, here it is a tetrahedron) representation of the vote matrix for four classes. The tetrahedron is shown pairwise. Each point corresponds to one observation and color is the true class. This is close but not a perfect classification since the colors are concentrated in the corners and there are some mixed colors in each corner.}
 \label{tetra}
 \end{figure}
 
-Because visualizing the vote matrix with a $(G-1)$ dimensional tetrahedron requires dynamic graphics, a low-dimensional option is also provided. For each class, each case has a value between 0-1. A side-by-side jittered dotplot is used for the display, where class is displayed on one axis and proportion is displayed on the other. For each dotplot, the ideal arrangement is that points are concentrated at 0 or 1 and only at 1 for their true class. This data is close to the ideal but not perfect, e.g. there are a few blue male crabs (orange) that are frequently predicted to be blue females (green), and a few blue female crabs predicted to be another class.
+Because visualizing the vote matrix with a $(G-1)$ dimensional tetrahedron requires dynamic graphics, a low-dimensional option is also provided. For each class, each case has a value between 0-1. A side-by-side jittered dotplot is used for the display, where the class is displayed on one axis and proportion is displayed on the other. For each dotplot, the ideal arrangement is that points are concentrated at 0 or 1 and only at 1 for their true class. This data is close to the ideal but not perfect, e.g. there are a few blue male crabs (orange) that are frequently predicted to be blue females (green), and a few blue female crabs predicted to be another class.
 
 \begin{figure}[hbpt]
 \centering
@@ -736,18 +713,17 @@ side <-  function(ppf, ang = 0, lege = "bottom", siz = 3,
 side(ppf, ttl="")
 
 @
-\caption{Another representation of the vote matrix, as a jittered side-by-side dotplot. It is not as elegant as the ternary plot, but it is useful because it places focus on each group. Each dotplot shows the proportion of times the case was predicted into the group, with 1 indicating that the case was always predicted to the group and 0 being never. On each dotplot, a single color dominates the top, indicating fairly clear distinctions between classes. Crabs from the blue species, both male and female, have more uncertainty in predictions, as seen by more crabs from other classes having higher vote proportions, than is seen in the orange species.}
+\caption{Another representation of the vote matrix, as a jittered side-by-side dotplot. It is not as elegant as the ternary plot, but it is useful because it places focus on each group. Each dotplot shows the proportion of times the case was predicted into the group, with 1 indicating that the case was always predicted to the group and 0 being never. On each dotplot, a single color dominates the top, indicating fairly clear distinctions between classes. Crabs from the blue species, both male and female, have more uncertainty in predictions, as seen by more crabs from other classes having higher vote proportions than is seen in the orange species.}
 \label{sideby}
 \end{figure}
 
 \section{Interactive Web App }\label{app}
-%Todo the PPforestViz pakage
 
  Interaction is added to the plots described in Section \ref{visen} and other plots, and they are organized into an interactive web app using \verb#shiny#~\citep{chang11shiny} for exploring the ensemble model. The app is organized into three tabs: individual cases; models; and performance comparison, to provide a model diagnostic tool. Interaction is provided as mouse-over labeling, mouse-click selection, and brushing, with results linked across multiple plots. The app takes advantage of new tools provided in the \verb#plotly#~\citep{plotly} package, developed as a part of Sievert's PhD thesis research~\citep{sievertthesis}.
 
-The \verb#plotly# functions directly translate a static \verb#ggplot2# object by  extracting  information  and  storing it in JavaScript Object Notation (JSON). This information is passed as input to a javascript function to produce a web graphic.  Interactions in a single display, and links between different graphics are two key tasks an interactive visualization should accomplish~\citep{xie2014reactive}.
+The \verb#plotly# functions directly translate a static \verb#ggplot2# object by extracting information and storing it in JavaScript Object Notation (JSON). This information is passed as input to a javascript function to produce a web graphic.  Interactions in a single display and links between different graphics are two key tasks an interactive visualization should accomplish~\citep{xie2014reactive}.
 
-As \cite{sievertthesis} describes, one of the biggest difficulties for the app in order manage linking between plots is the data structure management for each widget. Each widget has it own data structure and interaction. Putting them into the structure of a shiny app facilitates access to the widget data and coordinates selections across multiple plots.
+As \cite{sievert2020interactive} describes, one of the biggest difficulties for the app in order manage linking between plots is the data structure management for each widget. Each widget has it own data structure and interaction. Putting them into the structure of a shiny app facilitates access to the widget data and coordinates selections across multiple plots.
 
 The fishcatch data~\citep{fishcatch} is used to illustrate the shiny app characteristics. It contains 159 observations, with 6 physical measurement variables, and  7 types of fish, all caught from the same lake (Laengelmavesi) near Tampere in Finland. There are 35 bream, 11 parkki, 56 perch, 17 pike, 20 roach, 14 smelt and 6 whitewish. The shiny app showing fishcatch data can be accessed at \url{https://natydasilva.shinyapps.io/shinyppforest}.
 
@@ -762,10 +738,10 @@ This selection of plots enables aspects of the model, relating to performance fo
 \begin{figure}[hbpt]
 \centering
 \includegraphics[width=1\linewidth]{figure/fish11.png}
-\caption{Entry page for the web app, focusing on examining cases, in terms of similarity and uncertainty. The top plot shows the data, the remaining plots show similarity of cases and uncertainty in predictions. All of the plots are linked, so that selecting elements of one will generate changes in the others. \label{tab1}}
+\caption{Entry page for the web app, focusing on examining cases, in terms of similarity and uncertainty. The top plot shows the data, the remaining plots show similarity of cases and uncertainty in predictions. All of the plots are linked so that selecting elements of one will generate changes in the others. \label{tab1}}
 \end{figure}
 
-The diagram in Figure \ref{tab1diag} illustrates the data pipeline \citep{BAHM88,wickham2009plumbing} for the interactive graphics in the case level tab. Solid lines indicate notifications from the source data to the plots, and dashed lines indicate notification of user action on the plot, that notifies the data source of actions to take. The data table is a reactive object that has a listener associated with it. Each of the plots is reactive and has numerous listeners. When users make selections on a plot, either by clicking or group selection, a change to the data is made in terms of an update on the selected cases. This invokes a note to other plots to re-draw themselves. The linking between plots is effectively one-to-one, based on the row id of the data. The side-by-side jittered dotplot has $n\times G$ points, but selection can only be done within a dotplot. Selecting in one of the dotplots notifies the data table of the selection which triggers a re-draw of the other dotplots. Mouseovers on the plot pull additional information about the point or line under the cursor but doesn't link between plots.
+The diagram in Figure \ref{tab1diag} illustrates the data pipeline \citep{BAHM88,wickham2009plumbing} for the interactive graphics in the case level tab. Solid lines indicate notifications from the source data to the plots, and dashed lines indicate notification of user action on the plot, which notifies the data source of actions to take. The data table is a reactive object that has a listener associated with it. Each of the plots is reactive and has numerous listeners. When users make selections on a plot, either by clicking or group selection, a change to the data is made in terms of an update on the selected cases. This invokes a note to other plots to re-draw themselves. The linking between plots is effectively one-to-one, based on the row id of the data. The side-by-side jittered dotplot has $n\times G$ points, but selection can only be done within a dotplot. Selecting in one of the dotplots notifies the data table of the selection which triggers a re-draw of the other dotplots. Mouseovers on the plot pull additional information about the point or line under the cursor but do not link between plots.
 
 Two alternatives can be selected in shiny to draw the parallel coordinate plot: parallel or enhanced. Parallel draws the classic PCP and enhanced draws a modified version where variables are repeated \citep{hurley2011eulerian}.  Because reading a PCP is really only possible for neighboring variables, the variables are repeated so that all variables are neighboring.
 
@@ -778,9 +754,6 @@ Two alternatives can be selected in shiny to draw the parallel coordinate plot: 
 
 
 \subsection{Models}
-%I have to modify the selecction of the tree instead to select the tree based on the importance variable will be better select the tree based on the ooberror. Move the boxplot and select using thisone.
-%Include some alternative visualization fro Random forest
-%This is the oly tabset that can not be reproduced using RandomForest because we don't have the same information than in PPforest. Also doesn't make sense present the 1D projection for each of the node partitions.
 
 This second tab in the app focuses on teasing apart the forest to examine the qualities of each tree. For each tree, information on the variable importance, the projections used at each node, and the oob error is available.  The data feeding into this tab is a list of models along with the original data frame.
 The tree id is displayed when we mouse over the jittered side-by-side plot. This information is useful because, based on the accuracy, some trees could be pruned from the forest outside of the app.
@@ -790,30 +763,28 @@ Figure \ref{tab2} is a screenshot of the models tab. There are five plots, with 
 \begin{figure}[hbpt]
 \centering
 \includegraphics[width=1\linewidth]{figure/fish21.png}
-\caption{The individual model tab in the web app. Variable importance is displayed as jittered dot plots for three nodes of all trees. This is linked to a display of the PPTree, a boxplot of the error for all trees in the forest, and display of the data showing splits at each of three nodes and confusion tables as mosaic plots. Clicking a point in the jittered dotplot triggers various updates: each of the importance values for the same tree are highlighted (red), the tree that this corresponds to is drawn, the error for the tree is shown on the boxplot (in red), and the data displays are updated to show the tree. \label{tab2}}
+\caption{The individual model tab in the web app. Variable importance is displayed as jittered dot plots for three nodes of all trees. This is linked to a display of the PPTree, a boxplot of the error for all trees in the forest, and a display of the data showing splits at each of three nodes and confusion tables as mosaic plots. Clicking a point in the jittered dotplot triggers various updates: each of the importance values for the same tree are highlighted (red), the tree that this corresponds to is drawn, the error for the tree is shown on the boxplot (in red), and the data displays are updated to show the tree. \label{tab2}}
 \end{figure}
 
 The diagram in Figure~\ref{tab2diag} illustrates the data pipeline for interactive graphics.
-The data source is a \verb #PPforest# object. Interaction is driven by the variable importance plot. Selecting a point triggers a change in the data which cascades to re-draws of the other displays. Each plot has some information available on mouse over.
+The data source is a \verb#PPforest# object. Interaction is driven by the variable importance plot. Selecting a point triggers a change in the data which cascades to re-draws of the other displays. Each plot has some information available on mouse over.
 
 \begin{figure}[hbpt]
 \centering
 \includegraphics[width=1\linewidth]{figure/fishT2.pdf}
-\caption{Schematic diagram illustrating the interactivity in and between plots for model level exploration panel of the web app. Only the dotplot of variable importance is has click selection, which invokes changes of the tree display, boxplot, density plots and mosaic plots. Selecting a point, makes a change in the data, which propagates the importance values for other variables in this tree to be highlighted (red), draws the tree, highlights the error value of the tree, and shows the projections and confusion matrix for the three top nodes.}
+\caption{Schematic diagram illustrating the interactivity in and between plots for model level exploration panel of the web app. Only the dotplot of variable importance has click selection, which invokes changes of the tree display, boxplot, density plots, and mosaic plots. Selecting a point makes a change in the data, which propagates the importance values for other variables in this tree to be highlighted (red), draws the tree, highlights the error value of the tree, and shows the projections and confusion matrix for the three top nodes.}
 \label{tab2diag}
 \end{figure}
 
 \subsection{Performance Comparison}
+The third tab (Figure \ref{tab3}) examines the PPF fit and compares the result with a RF fit. There are four displays for each type of model: (1) Variable importance for all trees in the forest (same as in the models tab), (2) an receiver operating characteristic curve (ROC) curve comparing sensitivity and specificity for each class, (3) oob error by the number of trees to assess complexity, (4) overall variable importance. There is very little interaction on this tab. Users can select to focus on a subset of classes or choose the importance measure to show. Being able to focus on class can help to better understand how well the model performs across classes and the focus can be especially useful for unbalanced data. Examining the oob error by trees enables an assessment of how few trees might be used to provide an equally accurate prediction of future data.
 
-The third tab (Figure \ref{tab3}) examines the PPF fit and compares the result with a RF fit. There are four displays for each type of model: (1) Variable importance for all trees in the forest (same as in the models tab), (2) an receiver operating characteristic curve (ROC) curve comparing sensitivity and specificity for each class, (3) oob error by number of trees to assess complexity, (4) overall variable importance. There is very little interaction on this tab. Users can select to focus on a subset of classes or choose the importance measure to show. Being able to focus on class can help to better understand how well the model performs across classes and the focus can be especially useful for unbalanced data. Examining the oob error by trees enables an assessment of how few trees might be used to provide an equally accurate prediction of future data.
-
-The  ROC is used to summarize the trade-off between sensitivity and specificity. The plot shows the sensitivity and specificity when a parameter of classifier is varied \citep{trevor2011elements}. The specificity and sensitivity was computed with the \verb#pROC# package.
+The  ROC is used to summarize the trade-off between sensitivity and specificity. The plot shows the sensitivity and specificity when a parameter of the classifier is varied \citep{trevor2011elements}. The specificity and sensitivity were computed with the \verb#pROC# package.
 If more than two classes are available a multi-class ROC analysis is needed. Several solutions have been proposed for multi-class ROC. Some of the proposed reduced the multi-class problem to a set of binary problems. The approach used for a multi-class ROC analysis in this article is called one-against-all ~\citep{allwein2000reducing}.
-
 
 \begin{figure}[hbpt]
 \includegraphics[width=.8\linewidth]{figure/fish31.png}
-\caption{Performance comparison tab of the web app. ROC curves displaying sensitivity against specificity for the classes are shown, along with the oob error by number of trees used to build the forest, and overall variable importance. Displays are shown for the PPF and RF, for comparison purposes. Users can select a class to focus on, using the text entry box. \label{tab3}}
+\caption{Performance comparison tab of the web app. ROC curves displaying sensitivity against specificity for the classes are shown, along with the oob error by the number of trees used to build the forest, and overall variable importance. Displays are shown for the PPF and RF, for comparison purposes. Users can select a class to focus on, using the text entry box. \label{tab3}}
 \end{figure}
 \newpage
 
@@ -829,6 +800,6 @@ There are many possible extensions to the app, that could help it to be a tool f
 
 The app has helped to identify ways to improve the  PPtree algorithm and consequently, the PPF model. These especially apply to multiclass problems. Multiple splits for the same class would enable nonlinear classifications. Split criteria tend to place boundaries too close to some groups, due to heteroskedasticity being induced by aggregating classes. Forests are not always better than their constituent trees, and if the trees can be built better, the forest will provide stronger predictions.
 
-\bibliographystyle{jasa3}
+\bibliographystyle{bibstyle}
 \bibliography{ppforestpaperbib}
 \end{document}
