@@ -332,7 +332,20 @@ VI^{(1)} _{jk} = \frac{\sum_{i \in O_k } I(y_i=\hat y_{ik})-I(y_i=\tilde y_{ik})
 
 The coefficients of each projection are examined to define the other two importance measures. If the variables have been standardized, the magnitude of these values indicates importance. For a single PPtree the variable importance is computed by a weighted sum of the absolute values of the coefficients across nodes, then the weights take the number of classes in each node into account~\citep{lee2013pptree}.
 
-The global variable importance in a PPforest then can be defined in different ways. One way is to average the variable importance from each PPtree across all the trees in the forest. Alternatively, it can be computed as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree, for more details ~\cite{da2021projection}.
+The global variable importance in a PPforest then can be defined in different ways. One way is to average the variable importance from each PPtree across all the trees in the forest.
+
+\[
+VI^{(2)}_j=\frac{1}{B}\sum_{k=1}^B \sum_{s= 1}^{S}\frac{|a^{**}_{sjk}|}{G_s }
+\]
+
+\noindent where $a^{**}_{sjk}$ is the projected coefficient for node $s$ and variable $j$ in the $k^{th}$ PPtree, and $S$ is the total number of node partitions in the $k^{th}$ tree. Note that $\sum_{s= 1}^{S}\frac{|a^{**}_{sjk}|}{G_s }$ is the importance of the variable $j$ in the PPtree $k$. 
+
+Alternatively, it can be computed as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree .
+
+\[VI^{(3)}_j=\frac{1}{B}\frac{1}{G-1}\sum_{k=1}^B\sum_{s = 1}^{S} (1-e_k) I_{sjk}|a^{**}_{sjk}|
+\]
+
+\noindent where $e_k$ is the oob error rate of tree $k$, $I_{sjk}$ is the projection pursuit index value of node $s$ ~\cite{da2021projection}.
 
 Figure \ref{impotree} shows the absolute projection coefficient of the top three nodes for all the trees in a forest model. This information is displayed by a side-by-side jittered dot plot. The red dots correspond to the absolute coefficient values for the tree model of Figure \ref{pptreeviz1}. The forest was built using random samples of two variables for each node, hence there are two coefficients for each node. At node 1, BD has a high value and CW contributes much less. The scatterplot at right shows these two variables and the resulting boundary between groups that this would produce. Node 2 uses CL and RW, and RW contributes the most to the separation. The plot in the right shows the boundary that is induced. Node 3 uses FL and RW, and this is a much more even contribution by the two variables.
 For each tree in the forest, different decision rules are defined; the resulting boundaries on the previous plots are based on Rule 1 $= \frac{m_1}{2} + \frac{m_2}{2} $, where $m_1$ and $m_2$ are the mean of the left and right groups at each node.
@@ -466,7 +479,7 @@ p3 <-  d_boundary(3)
 
 For each tree, every pair of observations can be in the same terminal node or not. Tallying this up across all trees in a forest gives the proximity matrix, an $n\times n$ matrix of the proportion of trees that the pair share a terminal node. It can be considered a similarity matrix.
 
-Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the three dimensional space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
+Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations ~\citep{kruskal1964multidimensional}. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the three dimensional space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
 
 
 \begin{figure}[hbpt]
@@ -733,7 +746,8 @@ This tab is designed to examine uncertainty in the classification of observation
 Figure \ref{tab1} shows the arrangement of plots.
 The plots in the tab are (1) a parallel coordinate plot (PCP) of the data, (2) the MDS display of the proximity matrix, (3) side-by-side jittered dotplot, and (4) generalized ternary plot of the vote matrix. Each of these plots are interactive in the sense that each one presents individual interactions (mouse-over) and they are linked so that selections in one display are propagated to other plots (clicking and selecting).
 
-This selection of plots enables aspects of the model, relating to performance for individual cases, to be examined in the data space. The data plot is an essential element following the {\em model-in-the-data-space} philosophy of \citet{wickham2015visualizing}. The choice was made to use a parallel coordinate plot because it provides a space-efficient display of the data. Alternatives include the tour, a dynamic plot, or a scatterplot matrix. Theoretically, either of these could be substituted or added.
+This selection of plots enables aspects of the model, relating to performance for individual cases, to be examined in the data space. The data plot is an essential element following the {\em model-in-the-data-space} philosophy of \citet{wickham2015visualizing}. The choice was made to use a parallel coordinate plot because it provides a space-efficient display of the data. Alternatives include the tour, a dynamic plot, or a scatterplot matrix. Theoretically, either of these could be substituted or added. 
+Parallel coordinate plots are useful to visualize multivariate numerical data. As is shown in the first plot in Figure \ref{tab1}, in a PCP each variable is placed equidistant and perpendicular to the x-axis, on the y-axis the values for each variable are standardized to easily compare them. Each observation is represented as a line connected across  all the variables. In a PCP many variables can be compared together and seeing the relationships between them, identify and characterize groups of observations. The features can be ordered so that there are not too many lines intersecting resulting in an unreadable chart \citet{inselberg2009parallel}. 
 
 \begin{figure}[hbpt]
 \centering
