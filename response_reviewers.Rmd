@@ -70,9 +70,16 @@ Substantive comments
 
 \item p. 11, line 16: As section 3 discusses all other plots produced by the app it would be useful if it also included an overview of the parallel coordinate plot that only appears in section 4, so the meaning of that plot is not immediately clear (e.g. what is displayed on the vertical axis).
 
+\textcolor{violet}{We included a description of parallel coordinate plot in section 4 were this figure appears and the corresponding reference for further details.}
+
 \item p. 13, line 38: I find the choice of the interaction driver for the model tab puzzling. I would argue that the key statistic distinguishing the trees in the ensemble is OOB error so a more natural design choice would be to include jittered points in the OOB error boxplot so that the user can explore the well or poorly performing trees in more detail. I do not have a good intuition for why the user would be interested in exploring trees based on variable importance.
 
+\textcolor{violet}{TO DO, change selection to boxplot trees}
+
+
 \item p. 15, line 35: The OOB error plot is somewhat hard to read due to some classes being harder to classify than others, and a potential solution to that would be using a different scale on the vertical axis (e.g. percent of highest OOB error for a class).
+
+\textcolor{violet}{TO DO, not sure about the solutions}
 
 \end{enumerate}
 
@@ -137,8 +144,11 @@ CONTENT COMMENTS:
 \item Page 2: In describing Random Forests, in addition to randomly sampling variables to try to split on in each node, don't they also initially sample a subset of variables for each tree? If so, you should note what settings you use in this paper (how many variables are selected for each tree). Also, if the variables are randomly sampled at each node, rather than simply choosing the best projection possible for, say, any pair of variables, what effect does this have on the importance measures? What effect is there to determining the number of variables to use in each projection (e.g. 3 instead of 2)? Is this something you have experimented with?
 I think the paper could also benefit from a simple preliminary example of, say, two features and two classes and showing the plot of the linear combination resulting from projection pursuit. You could even include an image from the original paper.
 
+\textcolor{violet}{TO DO}
 
 \item Page 4 line 48: should $O_k$ also have a subscript for the variable j? Also $\hat{y}_{ikj}$
+
+\textcolor{violet}{Subscript j for $O_k$ is not needed because for every variable j $O_k$ will be the same and not change depending on j, the same for $\hat{y}_{ik}$. In the only case subscript $j$ can be included is in  $\tilde y_{ik}$ to indicate the permuted variable but for simplicity we just keep the formula as it is in the original PPForest paper (https://www.tandfonline.com/doi/abs/10.1080/10618600.2020.1870480) }
 
 \item Page 5 Figure 1: You mention that the variables should be standardized for the coefficients to be interpretable as importances and be comparable. But in the upper right corner, the plots of the variables distributions, for instance for node 2, are not in the standardized range (node 2 has an x-axis that goes up to 5 and 6). Is the distribution being plotted here the value of the linear combination for each class, rather than a single variable? Is there something going on here with the default x limits for doing KDE? As a side note, you show that the first cut perfectly separates the blue and orange species. You may want to consider having the bounds for the KDE be the observed range of the linear combination for each class so that the density plots won't overlap in the plot for node 1, which they seem to do more than they should if the separation is perfect.
 Furthermore, if you have any control over the color scheme (if you don't I would recommend adding this as a variable), it might be a good idea in this paper to have the colors for the blue and orange species be blue and orange, and have differing shading patterns to distinguish male from female, or something similar; perhaps you can choose more similar colors within both species. Or, better yet, can you use different plotting symbols, say triangles vs circles to distinguish the species, and shaded vs hollow to distinguish the sex?
@@ -146,11 +156,19 @@ Also, can you include labeling in your plot that the sub-plots are node ID (e.g.
 What do the numbers in the grey boxes at the terminal nodes represent?
 
 
+\textcolor{violet}{TO DO}
+
+
 \item Figures 1 and 2: I see that the potential range for coefficient values for the projection pursuit seem to be between -1 and 1. I imagine this is a feature of the algorithm. Perhaps include in your description of projection pursuit a note about this fact, for those unfamiliar, and mention what optimization criteria is used in it.
+
+\textcolor{violet}{TO DO}
 
 \item Page 6: If you use a notation for VI for global variable importance (you define it as the average across k trees), I'd just define it here as an equation and use it in the text (e.g in line 19).
 
+\textcolor{violet}{Formulas for all VI were defined and is more clear now.}
+
 \item Page 6 line 48: does MDS need a citation? Also, can you connect the results in this discussion to the RF graphics, e.g. in terms of same variables with high RF importance being important in MDS? Otherwise, this whole discussion seems unnecessary. If you are doing it simply to understand the data, I would move this section to right after you introduce the data, before you show the other graphics. Here, it seems like a tangent. Also, are these MDS and tetrahedral plots part of your software or do you perform them separately? I would say so explicitly in either case.
+
 
 \item Page 7 Figure 2: why does the left plot need to be a dot plot rather than, say, a single box or violin plot for each variable? I don't understand what role the x axis for each variable plays here. If it doesn't play any role (e.g. is just for the jittering), then don't use it.
 
