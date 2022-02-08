@@ -474,12 +474,13 @@ p3 <-  d_boundary(3)
 \caption{Visualizing the variable importance of all the trees in the forest, for three nodes. Each node of each tree has an importance value for each variable. The values for the whole forest are displayed using a side-by-side jittered dot plot. The importance values are the absolute values of the projection coefficients. The red points correspond to these values for the tree shown in Figure \ref{pptreeviz1}. Two variables are randomly selected at each node for creating the best projection, and split. The plots at right show the variables used and the split made at each of the nodes of this tree.  \label{impotree}}
 \end{figure}
 
+\newpage
 
 \subsection{Similarity of Cases}
 
 For each tree, every pair of observations can be in the same terminal node or not. Tallying this up across all trees in a forest gives the proximity matrix, an $n\times n$ matrix of the proportion of trees that the pair share a terminal node. It can be considered a similarity matrix.
 
-Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations ~\citep{kruskal1964multidimensional}. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the three dimensional space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences.
+Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, to view the similarity between observations ~\citep{kruskal1964multidimensional}. MDS transforms the dataset into a low-dimensional space where the distances are approximately the same as in the full $n$ dimensions. With $G$ groups, the low-dimensional space should be no more than $G-1$ dimensions. Figure \ref{prox1} shows the MDS plots for the three dimensional space induced by the four groups of the crab data. Color indicates the true species and sex. For this data two dimensions are enough to see the four groups separated quite well. Some crabs are clearly more similar to a different group, especially in examining the sex differences. MDS is included in the interactive web app presented in Section \ref{app}.
 
 
 \begin{figure}[hbpt]
@@ -576,11 +577,12 @@ The vote matrix ($n \times G$) contains the proportion of times each observation
 
 A ternary plot is a triangular diagram used to display compositional data with three components. More generally, compositional data can have any number of components, say $p$, and hence is constrained to a $(p-1)$ dimensional simplex in $p$-space. The vote matrix is an example of compositional data with $G$ components.
 
-With G classes, the ternary plot idea is generalized to a $(G-1)- dimensional$ simplex~\citep{sutherland2000orca, schloerke}. This is one of the approaches used to visualize the vote matrix.
+With G classes, the ternary plot idea is generalized to a $(G-1)- dimensional$ simplex~\citep{sutherland2000orca, schloerke}. This is one of the approaches used to visualize the vote matrix and it is included in the interactive web app presented in Section \ref{app}.
 
 For the crab data, $G=4$ and the generalized ternary plot will be a tetrahedron. The  \verb#tourr# package~\citep{wickham2011tourr} can be used to view it (e.g. \url{https://vimeo.com/170522736}).
 
-Figure \ref{tetra} shows the tetrahedron structure for the crab vote matrix shown in three pairwise views. With well-separated classes, the colored points will each concentrate into one of the vertices. This is close but not perfect, indicating some crabs are commonly incorrectly classified.
+Figure \ref{tetra} shows the tetrahedron structure for the crab vote matrix shown in three pairwise views. With well-separated classes, the colored points will each concentrate into one of the vertices. This is close but not perfect, indicating some crabs are commonly incorrectly classified. 
+
 
 \begin{figure}[hbpt]
 \centering

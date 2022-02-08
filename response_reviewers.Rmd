@@ -169,23 +169,43 @@ What do the numbers in the grey boxes at the terminal nodes represent?
 
 \item Page 6 line 48: does MDS need a citation? Also, can you connect the results in this discussion to the RF graphics, e.g. in terms of same variables with high RF importance being important in MDS? Otherwise, this whole discussion seems unnecessary. If you are doing it simply to understand the data, I would move this section to right after you introduce the data, before you show the other graphics. Here, it seems like a tangent. Also, are these MDS and tetrahedral plots part of your software or do you perform them separately? I would say so explicitly in either case.
 
+\textcolor{violet}{MDS citation was included. In  Section 3 we describe the mapping of diagnostics to visualizations. MDS is presented in Subsection 3.3 (Similarity of cases) the key connection with the forest is that we are using the proximity matrix information which is one of the diagnostics described for PPforest or RF and we use this information to do the MDS. This visualization can be useful to identify in which cases the model is working well and when is having problems to classify cases.
+MDS and generalized ternary plot (tetrahedral plot in case there are  four clases) are both implemented in the app and we included a comment in the paper to clarify this point. }
 
 \item Page 7 Figure 2: why does the left plot need to be a dot plot rather than, say, a single box or violin plot for each variable? I don't understand what role the x axis for each variable plays here. If it doesn't play any role (e.g. is just for the jittering), then don't use it.
 
+
+\textcolor{violet}{We selected a jittered side-by-side dot plot in this case instead of a box plot because we want to see the values for each tree. Jittering implys to add random noise to data in order to prevent overplotting. The x axis represents each variable but instead of using the same x position for all the points we use jittered values in an interval. This plot have more sence when is presented in the app conected with the others in the model level analysis. }
+ 
 \item Page 9, Figure 4: is the dimension of the simplex always at most 3 or G-1? What would it look like with more classes? I'd clarify whether this only works for your example or whether it can always be drawn.
+
+\textcolor{violet}{In Figure 4 the dimension of the simplex is G-1, since in crab data there are 4 clases in this case we work with a three dimensional simplex. The ternary plot can be generalized to more dimensions and in the interactive web app (Section 4) we present a problem with 7 clases (fishcatch data) and in Figure 6 shows how a generalized ternary plot look like with more classes (6 dimensional simplex). }
 
 \item Page 10, Figure 5: similar remark as before. I think a violin plot or something similar for each class, rather than a jittered dot plot, is more correct. The x-axis for each class is a "fake" axis. I think jittered dot plots should only be used with scatterplots to make sure individual dots can be distinguished.
 
+\textcolor{violet}{We are using points because it is important to see the individual cases and the jitter is to overcome overploting. It is not recommended using jittered scatterplots because you are changing the real values of your data. In this case we are not changing the values of a continuous variable just the position to overcome overplotting in a categorical one.  }
+
 \item Page 10, line 40: This sentence is muddled "As Sievert (2020) describes, one of the biggest difficulties for the app in order manage linking between plots is the data structure management for each widget". Furthermore, what does "widget" refer to here? Use a more descriptive term.
+
+\textcolor{violet}{Need help not sure what is more descriptive for widget}
 
 \item Page 10, line 45: If you are just going to demonstrate the interactivity, wouldn't it be better to just continue with the original crab dataset, or have one dataset throughout? Unless there is something particularly interesting about this dataset.
 
+\textcolor{violet}{Yes fishcatch data are more difficutl to classify and then more interesting to show some of the results. For simplicity to describe the main plot of the app we use crab data but to describe the app we prefer to present a more complex problem, more clases, umbalanced data...}
+
 \item Page 12 Figure 6: in the enhanced PCP, you say all variable pairs are shown at least once as neighbors. Is there a way, either through ordering or adding dividing lines, etc. to help a reader find the pair they are interested in? Or is there some sorting done so that, the pairs are ordered from left to right in terms of some metric of "interesting-ness"? There seems to be no order in the given plot. Do you automatically pick the number of dimensions to show in MDS? Should the tetrahedral plots here have some kind of axis labels? See Figure 7 where they do.
+
+\textcolor{violet}{TO DO,  I just selected two dimensions in the MDS. For the generalized ternary plot we are ploting diferent rotations of a 6-dimensional simplex but I can add similar labels as we did in Figure 7 }
 
 \item Page 13 line 46: I wasn't aware that there was an option in RF to prune under-performing trees (as opposed to nodes within a tree) in an ensemble. Please elaborate or include a reference. Also, in this case, maybe a different word than "prune", such as "discard".
 
+\textcolor{violet}{This comment is in page 12, In the original RF there is not an option to prune under-performing trees. This comment is just to mention a possible use for the information we get from the app, also we are presenting the app using PPforest and this can be a possible extension for our algorithm.}
+
 \item Page 16 Figure 10: in the upper LH corner, where you select the classes, do these appear as text that you type or delete, or as buttons you can toggle on and off? Seems like the latter would be better.
 Also, the bottom two plots have different x axes, so it is hard to compare them (if they should be compared, the axes should be the same; perhaps you could even plot them on the same plot?). Furthermore, there are no titles for either, and they have the same axis labels so I have no idea what the difference is between them.
+
+\textcolor{violet}{TO DO}
+
 \end{enumerate}
 
 STYLISTIC COMMENTS
