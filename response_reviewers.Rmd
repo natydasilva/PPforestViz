@@ -70,16 +70,16 @@ Substantive comments
 
 \item p. 11, line 16: As section 3 discusses all other plots produced by the app it would be useful if it also included an overview of the parallel coordinate plot that only appears in section 4, so the meaning of that plot is not immediately clear (e.g. what is displayed on the vertical axis).
 
-\textcolor{violet}{We included a description of parallel coordinate plot in section 4 were this figure appears and the corresponding reference for further details.}
+\textcolor{violet}{We have included a description of parallel coordinate plot in Section 4 were this figure appears and the corresponding reference for further details. In the vertical axis the values for each variable are standardized to easily compare them.}
 
 \item p. 13, line 38: I find the choice of the interaction driver for the model tab puzzling. I would argue that the key statistic distinguishing the trees in the ensemble is OOB error so a more natural design choice would be to include jittered points in the OOB error boxplot so that the user can explore the well or poorly performing trees in more detail. I do not have a good intuition for why the user would be interested in exploring trees based on variable importance.
 
-\textcolor{violet}{TO DO, change selection to boxplot trees}
+\textcolor{violet}{The second tab was modifyed in different ways taking into account your valuable comments. We have included three main changes in the second tabset, first we have included jittered points in the OOB error boxplot where the user can select trees based in their performance instead of selecting trees based on importance variable. Second, we have included a panel to select the nodes to see in the importance variable plot, the mosaic plot and the density plot. The panel allows you to select more or less than three nodes and the mentioned plots are updated acordingly. Finally, we rearrange some of the plots to make the selection and interaction more intuitive  presented in Figure 8.}
 
 
 \item p. 15, line 35: The OOB error plot is somewhat hard to read due to some classes being harder to classify than others, and a potential solution to that would be using a different scale on the vertical axis (e.g. percent of highest OOB error for a class).
 
-\textcolor{violet}{TO DO, not sure about the solutions}
+\textcolor{violet}{We explore different alternatives as you suggested but the result was not clearly better. We have removed the points and just keep thiner lines which improve the visualization. Also in the app, because the interactivity, it is easy to see the oob error values mousing over the plot which in the static version it is not possible.}
 
 \end{enumerate}
 
@@ -122,7 +122,7 @@ Minor comments
 
 \item p. 16, line 32: it would be useful to include a legend of the class colors.
 
-\textcolor{violet}{TO DO}
+\textcolor{violet}{Class color legends were not included in the interactive web app because the interactivity allows you to get the class name when you mouse over each plot.}
 
 \item p. 17, line 6: " will perform" instead of "will performs".
 
