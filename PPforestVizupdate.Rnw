@@ -120,8 +120,13 @@ library(pROC)
 library(gridExtra)
 library(grid)
 library(ggmosaic)
-load("ppf.RData")
+set.seed(123)
+#  ppf2022 <-PPforest(data = crab, class= "Type", std = TRUE, size.tr = 1 , m = 500, PPmethod = 'LDA', size.p =.33,
+#   lambda = .1, parallel = FALSE, cores = 2, rule = 1)
+# save(ppf2022, file = "ppf2022.RData")
+load("ppf2022.RData")
 load("rf_fish.RData")
+ ppf<- ppf2022
 @
 
 
@@ -129,7 +134,8 @@ load("rf_fish.RData")
 \begin{figure}[hbpt]
 \centering
 <<trcomb, echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=6.5, results='hide', error=FALSE>>=
-tree <- 18
+ 
+tree <- 11
 
 #Data trans density and mosaic
 dat_dens <- function(PPclassOBJ, node.id, Rule, legend = TRUE, std = TRUE,
@@ -231,12 +237,15 @@ dat_pl <- lapply(as.list(nodes), densf) %>% bind_rows(.id='node')
     levels(dat_pl$Class) <-  levels(as.factor(ppf$train[ppf$class.var][, 1]))
   }
 
-  p1 <- dat_pl %>% filter(node.id %in%nodes) %>%
+  p1 <- dat_pl %>% filter(node.id %in%nodes) %>% mutate(node.id = paste("Node",node.id)) %>% 
     ggplot( aes(  x = proj.data, group = Class, fill = Class ) ) +
     geom_density(alpha = .5) + facet_grid(~ node.id, scales = 'free') +
     scale_fill_manual(values = myColors, labels=c("BF", "BM", "OF", "OM"), name="") +geom_vline(aes(xintercept = cut),
                                                       linetype = "dashed",
-                                                      color = 2) + labs(x="")
+                                                      color = 2) + labs(x="") +
+    scale_x_continuous( breaks = c(-0.5,0,0.5),
+                    limits=c(-0.5,0.5)) +theme(axis.text.x = element_text(size=8))
+   
 
 
 
@@ -246,7 +255,7 @@ dat_pl <- lapply(as.list(nodes), densf) %>% bind_rows(.id='node')
 }
 
 
-p1b <- PPtree_dens(ppf, tree, nodes =c(1,2,3), pos="none")
+p1b <- PPtree_dens(ppf, tree, nodes = c(1,2,3), pos="none")
 
 #Mosaic plot Tab 2
 PPtree_mosaic <- function(ppf,tr, nodes = NULL, pos="none"){
@@ -273,7 +282,7 @@ dat_pl <- lapply(as.list(nodes), densf) %>% bind_rows(.id='node')
   dat_mosaic <- data.frame( with(dat_pl, table(Class, Dir,node.id) ) )
 
 
-  p1 <- dat_mosaic %>% filter(node.id %in%nodes) %>% ggplot() +
+  p1 <- dat_mosaic %>% filter(node.id %in%nodes) %>% mutate(node.id = paste("Node",node.id))%>% ggplot() +
     geom_mosaic( aes(weight = Freq, x = product(Class,Dir) ,fill = Class),  offset=.005)+facet_grid(~node.id)+
     scale_fill_manual(values = myColors) + theme(legend.position=pos,axis.text.x  = element_text(angle=90, vjust=0.5),aspect.ratio = 1) +xlab("")
 
@@ -288,7 +297,7 @@ nodes <- nrow(ppf[["output.trees"]][[tree]]$projbest.node)
 projbest.node <- ppf[["output.trees"]][[tree]]$projbest.node
 coefs <- data.frame(node = as.factor(1:nodes) , projbest.node)
 colnames(coefs)  <- c("node", colnames(ppf$train[, -1]))
-coefs <- coefs %>% gather(variable, value,-node)
+coefs <- coefs %>% gather(variable, value,-node) %>% mutate(node = paste("Node",node))
 
 p1d <-
   coefs %>%
@@ -307,13 +316,14 @@ g_legend <- function(a.gplot){
 layoutmat <- cbind(c(1, 1, 1), c(2, 3, 4))
 
 labpl <-PPtree_dens(ppf, tree, nodes =c(1,2,3), pos="bottom")
-
+ppf[["output.trees"]][[tree]]$origclass <-ppf[["output.trees"]][[tree]]$origclass %>% recode(`1` ="BF", `2`="BM", `3`="OF",`4`="OM" )
+  
 plot(ppf[["output.trees"]][[tree]], main = "", font.size = 12)
          grid.arrange(p1d , p1b, p1c,  g_legend(labpl),layout_matrix=layoutmat  ,
        widths =c(2,2) ,heights=c(2,2,.5), as.table =TRUE)
 
 
-  @
+@
 \caption{Visualizing the PPtree model of the crab data. The tree has three nodes (top). The density plots show the data projections at each node, colored by group (middle). The dashed vertical red line indicates the split value of each node. At node 1 the blue species is separated from orange species. Nodes 2 and 3 separate the sexes, which are more confused for the blue species. Mosaic plots of the confusion table for each split (bottom). Node 1 shows the clear split of the species, with a small number of misclassifications. Node 2 where orange females are separated from orange males indicates small number of misclassifications. Node 3 where blue females are separated from blue males, shows a larger misclassification than for orange species.\label{pptreeviz1}}
 \end{figure}
 
@@ -371,7 +381,7 @@ bestnode <- ppf[["output.trees"]] %>%  lapply(bnf) %>% bind_rows()
 colnames(bestnode)[-1] <- colnames(data[, -1])
 bestnode$node <- as.factor(bestnode$node)
 
-aux <- bestnode %>% filter(node %in% nodes) %>% mutate(ids = rep(1:ppf$n.tree, each = length(nodes))) %>% gather(var, value, -ids, -node)
+aux <- bestnode %>% filter(node %in% nodes) %>% mutate(ids = rep(1:ppf$n.tree, each = length(nodes))) %>% mutate(node = paste("Node",node))%>% gather(var, value, -ids, -node)
 
 aux$Variables <- as.numeric(as.factor(aux$var) )
 aux$Abs.importance <- round( aux$value, 2)
