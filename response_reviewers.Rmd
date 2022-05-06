@@ -59,14 +59,23 @@ Summary of the paper
 
 The paper introduces an app for visual exploration of tree-based ensemble models in three steps. First, the app enables the user to investigate how well the model performs when it comes to predicting each class in its observation-level functionality. Second, the tree-level section allows the user to select a tree based on a variable importance measure in one of the first three nodes and visualize the way the first three splits are made in that tree. Finally, the app visually compares the predictive performance of the model to a benchmark one, which is illustrated by comparing a projection-pursuit-based random forest to a standard one.
 
-The paper and its accompanying app seem to be a good fit for Computational Statistics, as they apply interesting visualization techniques to a tree-based ensemble model that will surely prove useful for practitioners. However, for this potential to materialize the authors should put more emphasis on the limitations of their approach. In particular, the app focuses on the first three nodes of the trees in question, which would be much less informative in settings requiring deep trees. Furthermore, plots such as the parallel coordinate plot would lose their appeal in settings with thousands of variables. A brief discussion of circumstances limiting the usability of the app would address these concerns and allow users to easily determine whether the app is suitable for their application.
+The paper and its accompanying app seem to be a good fit for Computational Statistics, as they apply interesting visualization techniques to a tree-based ensemble model that will surely prove useful for practitioners. 
+
+However, for this potential to materialize the authors should put more emphasis on the limitations of their approach. \textcolor{violet}{TO DO}
+
+In particular, the app focuses on the first three nodes of the trees in question, which would be much less informative in settings requiring deep trees. \textcolor{violet}{The app was modified to adress this issue. Now the user can select the nodes to see, three or more. If there are a lot of nodes will be better to select at most 4 to see better the complete display}
+
+Furthermore, plots such as the parallel coordinate plot would lose their appeal in settings with thousands of variables. A brief discussion of circumstances limiting the usability of the app would address these concerns and allow users to easily determine whether the app is suitable for their application.
+
+\textcolor{violet}{TO DO}
+
 
 Substantive comments
 
 \begin{enumerate}
 \item p. 8, line 42: The issue of visualizing the tetrahedron is arguably not of first-order importance as it is not as helpful for classification problems with more than four classes. It might be more useful to focus exclusively on the side-by-side jittered dotplot as this approach generalizes in a more straightforward way to problems with more classes.
 
-\textcolor{violet}{As we mentioned in page 7 the ternary plot can be generalized to more than three dimensional space, with G classes, the ternary plot idea is generalized to a G-1 dimensional simplex. Then if we have 4 classes the generalized ternary plot is a tetrahedron as shown in Figure 4 but if we have more than four classes we can also generalize the ternary plot idea. In the fishcatch data used in this paper to illustrate the shiny app there are 7 classes and we generalized the ternary plot to a 6-dimensional simplex as is shown in the last panel of  Figure 6}
+\textcolor{violet}{As we mentioned in page 7 the ternary plot can be generalized to more than three dimensional space, with G classes, the ternary plot idea is generalized to a G-1 dimensional simplex. Then if we have 4 classes the generalized ternary plot is a tetrahedron as shown in Figure 4 but if we have more than four classes we can also generalize the ternary plot idea. In the fishcatch data used in this paper to illustrate the shiny app there are 7 classes and we generalized the ternary plot to a 6-dimensional simplex as is shown in the last panel of  Figure 6 (6- didmensional simplex shown pairwise), using tourr package you can see better the 6 dimensional simplex in different rotations https://vimeo.com/707047875. The structure is complexbecausethereare7 vertices,21 eddges and 35 faces.}
 
 \item p. 11, line 16: As section 3 discusses all other plots produced by the app it would be useful if it also included an overview of the parallel coordinate plot that only appears in section 4, so the meaning of that plot is not immediately clear (e.g. what is displayed on the vertical axis).
 
@@ -144,20 +153,41 @@ CONTENT COMMENTS:
 \item Page 2: In describing Random Forests, in addition to randomly sampling variables to try to split on in each node, don't they also initially sample a subset of variables for each tree? If so, you should note what settings you use in this paper (how many variables are selected for each tree). Also, if the variables are randomly sampled at each node, rather than simply choosing the best projection possible for, say, any pair of variables, what effect does this have on the importance measures? What effect is there to determining the number of variables to use in each projection (e.g. 3 instead of 2)? Is this something you have experimented with?
 I think the paper could also benefit from a simple preliminary example of, say, two features and two classes and showing the plot of the linear combination resulting from projection pursuit. You could even include an image from the original paper.
 
-\textcolor{violet}{TO DO}
+\textcolor{violet}{Random Forest presents two sources of randomness in the tree: random variable selection and random bootstrap samples. The random variables selection used to node partition, each split are identified from a random subset of all variables. There is not an initial sample of variables for each tree, the sample is for each tree in each  node partition, in each case using all the variables.
+We did not explore formally the sensitivity of the random variable sample size in the importance variable measure.
+We have included an image from the original paper with the boundary that would result from a classification tree fitted using the PPtree algorithm to take into account your last request. The plot shows a simple example from simulated data with two features and three classes. The partitions generated by PPtree algorithm are oblique to the axis, incorporating the association between the two variables.
+}
 
 \item Page 4 line 48: should $O_k$ also have a subscript for the variable j? Also $\hat{y}_{ikj}$
 
-\textcolor{violet}{Subscript j for $O_k$ is not needed because for every variable j $O_k$ will be the same and not change depending on j, the same for $\hat{y}_{ik}$. In the only case subscript $j$ can be included is in  $\tilde y_{ik}$ to indicate the permuted variable but for simplicity we just keep the formula as it is in the original PPForest paper (https://www.tandfonline.com/doi/abs/10.1080/10618600.2020.1870480) }
+\textcolor{violet}{Subscript j for $O_k$ is not needed because for every variable j $O_k$ will be the same and not change depending on j, the same for $\hat{y}_{ik}$. In the only case subscript $j$ can be included is in  $\tilde y_{ik}$ to indicate the permuted variable but for simplicity we just keep the formula as it is in the original PPforest paper (https://www.tandfonline.com/doi/abs/10.1080/10618600.2020.1870480) }
 
-\item Page 5 Figure 1: You mention that the variables should be standardized for the coefficients to be interpretable as importances and be comparable. But in the upper right corner, the plots of the variables distributions, for instance for node 2, are not in the standardized range (node 2 has an x-axis that goes up to 5 and 6). Is the distribution being plotted here the value of the linear combination for each class, rather than a single variable? Is there something going on here with the default x limits for doing KDE? As a side note, you show that the first cut perfectly separates the blue and orange species. You may want to consider having the bounds for the KDE be the observed range of the linear combination for each class so that the density plots won't overlap in the plot for node 1, which they seem to do more than they should if the separation is perfect.
+\item Page 5 Figure 1: You mention that the variables should be standardized for the coefficients to be interpretable as importances and be comparable. But in the upper right corner, the plots of the variables distributions, for instance for node 2, are not in the standardized range (node 2 has an x-axis that goes up to 5 and 6). 
+\textcolor{violet}{As you mentioned the data should be standardized for the coefficients to be interpretable as importances, we fixed the density plot and the x axis are in standardized range now.}
+
+
+Is the distribution being plotted here the value of the linear combination for each class, rather than a single variable? 
+
+\textcolor{violet}{The density plots shows the data projection at each node. }
+
+Is there something going on here with the default x limits for doing KDE? 
+\textcolor{violet}{The x limits were fixed.} 
+
+As a side note, you show that the first cut perfectly separates the blue and orange species. You may want to consider having the bounds for the KDE be the observed range of the linear combination for each class so that the density plots won't overlap in the plot for node 1, which they seem to do more than they should if the separation is perfect.
+
+\textcolor{violet}{We have changed the example but even in the previous one in the first node partition the separation was not perfect as you mentioned. We explore your suggestion (changing the bound for the KDE to observe range) but the result was not better and we keep the original.} 
+
 Furthermore, if you have any control over the color scheme (if you don't I would recommend adding this as a variable), it might be a good idea in this paper to have the colors for the blue and orange species be blue and orange, and have differing shading patterns to distinguish male from female, or something similar; perhaps you can choose more similar colors within both species. Or, better yet, can you use different plotting symbols, say triangles vs circles to distinguish the species, and shaded vs hollow to distinguish the sex?
+
+\textcolor{violet}{We have complete control over the color palette and the selected palette (Dark2) is a qualitative palette which is suited to represent categorical data and is also colorblind friendly. In this case we are not changing the color palette as you suggested  because maybe for the density plot your idea will work but in the other visualizations using different shades to differentiate sexes will not be easy to identify when the geometric element for example are points. Also in terms of perception using different colors is better than using shapes to differentiate classes.} 
+
 Also, can you include labeling in your plot that the sub-plots are node ID (e.g., put the label "node" above the 3 density plots).
+\textcolor{violet}{We have included in each sub-plots "Node" before the number and also update this in the app}
+
 What do the numbers in the grey boxes at the terminal nodes represent?
 
-
-\textcolor{violet}{TO DO}
-
+\textcolor{violet}{The numbers  in the gray boxes are the predicted class, we fixed the plot to show the class names}
+ 
 
 \item Figures 1 and 2: I see that the potential range for coefficient values for the projection pursuit seem to be between -1 and 1. I imagine this is a feature of the algorithm. Perhaps include in your description of projection pursuit a note about this fact, for those unfamiliar, and mention what optimization criteria is used in it.
 
@@ -165,7 +195,7 @@ What do the numbers in the grey boxes at the terminal nodes represent?
 
 \item Page 6: If you use a notation for VI for global variable importance (you define it as the average across k trees), I'd just define it here as an equation and use it in the text (e.g in line 19).
 
-\textcolor{violet}{Formulas for all VI were defined and is more clear now.}
+\textcolor{violet}{Formulas for all VI were defined in equations and mentionedd in the text. It  is more clear now.}
 
 \item Page 6 line 48: does MDS need a citation? Also, can you connect the results in this discussion to the RF graphics, e.g. in terms of same variables with high RF importance being important in MDS? Otherwise, this whole discussion seems unnecessary. If you are doing it simply to understand the data, I would move this section to right after you introduce the data, before you show the other graphics. Here, it seems like a tangent. Also, are these MDS and tetrahedral plots part of your software or do you perform them separately? I would say so explicitly in either case.
 
@@ -187,7 +217,7 @@ MDS and generalized ternary plot (tetrahedral plot in case there are  four clase
 
 \item Page 10, line 40: This sentence is muddled "As Sievert (2020) describes, one of the biggest difficulties for the app in order manage linking between plots is the data structure management for each widget". Furthermore, what does "widget" refer to here? Use a more descriptive term.
 
-\textcolor{violet}{Need help not sure what is more descriptive for widget}
+\textcolor{violet}{NEED HELP, not sure how to improve this sentence and I do not know what is more descriptive for widget. At their core Shiny widgets are mini-applications created using the shinyApp function.}
 
 \item Page 10, line 45: If you are just going to demonstrate the interactivity, wouldn't it be better to just continue with the original crab dataset, or have one dataset throughout? Unless there is something particularly interesting about this dataset.
 
@@ -195,7 +225,9 @@ MDS and generalized ternary plot (tetrahedral plot in case there are  four clase
 
 \item Page 12 Figure 6: in the enhanced PCP, you say all variable pairs are shown at least once as neighbors. Is there a way, either through ordering or adding dividing lines, etc. to help a reader find the pair they are interested in? Or is there some sorting done so that, the pairs are ordered from left to right in terms of some metric of "interesting-ness"? There seems to be no order in the given plot. Do you automatically pick the number of dimensions to show in MDS? Should the tetrahedral plots here have some kind of axis labels? See Figure 7 where they do.
 
-\textcolor{violet}{TO DO,  I just selected two dimensions in the MDS. For the generalized ternary plot we are ploting diferent rotations of a 6-dimensional simplex but I can add similar labels as we did in Figure 7 }
+\textcolor{violet}{PDP can be order in different ways, we have modified the PDP and included variable order based on the mean value. As you suggested, we have also change the grid lines and just keep the vertical grid in gray, it is more clear now.  
+In the MDS we just selected two dimensions but can be modify if it is needed by the problem.
+We have included labels in the generalized ternary plot as we did in Figure 7.}
 
 \item Page 13 line 46: I wasn't aware that there was an option in RF to prune under-performing trees (as opposed to nodes within a tree) in an ensemble. Please elaborate or include a reference. Also, in this case, maybe a different word than "prune", such as "discard".
 
@@ -204,7 +236,8 @@ MDS and generalized ternary plot (tetrahedral plot in case there are  four clase
 \item Page 16 Figure 10: in the upper LH corner, where you select the classes, do these appear as text that you type or delete, or as buttons you can toggle on and off? Seems like the latter would be better.
 Also, the bottom two plots have different x axes, so it is hard to compare them (if they should be compared, the axes should be the same; perhaps you could even plot them on the same plot?). Furthermore, there are no titles for either, and they have the same axis labels so I have no idea what the difference is between them.
 
-\textcolor{violet}{TO DO}
+\textcolor{violet}{In  the upper LH corner we are using the function `selectizeInput()` from shiny R package which creates a select list that can be used to choose a single or multiple items from a list of values, you do not have to type the class names you just select the names from a list.
+For the bottom two plots (variable importance plots) we have fixed the axis and  include titles in each plot, now is easy to compare them.}
 
 \end{enumerate}
 

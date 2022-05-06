@@ -72,7 +72,125 @@ A conceptual framework for model visualization can be summarized in three strate
 There has been some, but not a lot of, research on visualizing classification models.
 \cite{urbanek2002exploring} presents interactive tree visualization implemented in the java software called \verb# KLIMT# that includes zooming, selection, multiple views, interactive pruning, and tree construction as well as the interactive analysis of forests of trees using treemaps. \cite{cutler15raft} developed a java package called \verb# RAFT# to visualize a forest classifier, that included variable selection, parallel coordinate plots, heat maps, and scatter plots of some diagnostics. Linking between plots is limited. \cite{quach2012interactive} presents interactive forest visualization using the R package \verb# iPlots eXtreme # \citep{urbanek2011iplots} where several displays are shown in one window with some linking between them available. \cite{Silva2016} describes visualizing components of an ensemble classifier.
 
-This article describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit random forests (PPF)~\citep{da2021projection} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in R \citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that helps the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model, and ensemble summaries.
+This article describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit random forests (PPF)~\citep{da2021projection} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. Figure \ref{bounds} shows the boundary that would result from a classification tree fitted using the PPtree algorithm (Example from \citep{da2021projection}).
+
+The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in R \citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that helps the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model, and ensemble summaries.
+
+<<pkg, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(PPforest)
+library(shiny)
+library(GGally)
+library(productplots)
+library(PPtreeViz)
+library(tidyr)
+library(dplyr)
+library(pracma)
+library(RColorBrewer)
+library(randomForest)
+library(pROC)
+library(gridExtra)
+library(grid)
+library(ggmosaic)
+set.seed(123)
+#  ppf2022 <-PPforest(data = crab, class= "Type", std = TRUE, size.tr = 1 , m = 500, PPmethod = 'LDA', size.p =.33,
+#   lambda = .1, parallel = FALSE, cores = 2, rule = 1)
+# save(ppf2022, file = "ppf2022.RData")
+load("ppf2022.RData")
+load("rf_fish.RData")
+ ppf<- ppf2022
+@
+
+\begin{figure}[!t]
+<<boundss, cache=FALSE, echo=FALSE, fig.height=5, fig.width=8, message=FALSE>>=
+grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
+
+  plots <- list(...)
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+
+  combined <- switch(position,
+       "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                   legend,
+                   ncol = 1,
+                   heights = unit.c(unit(1, "npc") - lheight, lheight)),
+       "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                   legend,
+                   ncol = 2,
+                   widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+
+  grid.draw(combined)
+}
+
+simu3 <- function(mux1, mux2, muy1, muy2, muz1, muz2,
+                  cor1, cor2, cor3) {
+  bivn <- MASS::mvrnorm(100, mu = c(mux1, mux2),
+                  Sigma = matrix(c(1, cor1, cor1, 1), 2))
+  bivn2 <- MASS::mvrnorm(100, mu = c(muy1, muy2),
+                   Sigma = matrix(c(1, cor2, cor2, 1), 2))
+  bivn3 <- MASS::mvrnorm(100, mu = c(muz1, muz2),
+                   Sigma = matrix(c(1, cor3, cor3, 1), 2))
+
+  d1 <- data.frame(Sim = "sim1", bivn, stringsAsFactors = TRUE)
+  d2 <- data.frame(Sim = "sim2", bivn2, stringsAsFactors = TRUE)
+  d3 <- data.frame(Sim = "sim3", bivn3, stringsAsFactors = TRUE)
+  rbind(d1, d2, d3)
+}
+
+set.seed(666)
+dat.pl2 <- simu3(-1,0.6,0,-0.6, 2,-1,0.95, 0.95, 0.95)
+dat.plnew <- simu3(0,0.6,0,-0.6, 0,-1,-0.1, -0.1, -0.1)
+
+
+grilla <- expand.grid(X1 = seq(-4,4.8,,100),
+                            X2 = seq(-4.3,3.3,,100))
+
+pptree <- PPtreeViz::PPTreeclass(Sim~., data = dat.pl2, "LDA")
+ppred.sim <- PPtreeViz::PPclassify(pptree, test.data = grilla,
+                                   Rule = 6)
+grilla$ppred<-ppred.sim[[2]]
+
+rpart.crab <- rpart::rpart(Sim ~ X1 + X2, data = dat.pl2)
+rpart.pred <- predict(rpart.crab, newdata = grilla, type="class")
+
+bnds <- data.frame(
+  a = c(pptree$splitCutoff.node[[1]] / pptree$projbest.node[[3]],
+      pptree$splitCutoff.node[[2]] / pptree$projbest.node[[4]]),
+  b = c(-pptree$projbest.node[[1]] / pptree$projbest.node[[3]],
+      -pptree$projbest.node[[2]] / pptree$projbest.node[[4]]))
+p <- ggplot(data = grilla ) +
+       geom_point(aes(x = X1, y = X2,
+                  color = as.factor(ppred),
+                  shape=as.factor(ppred)),
+                  alpha = .20) +
+      scale_colour_brewer(name="Class", type="qual",
+                      palette = "Dark2") +
+
+      scale_shape_discrete(name = 'Class') +
+      theme_bw() +
+      theme(aspect.ratio = 1, legend.position="none")
+
+pl.pp <- p + geom_point(data = dat.pl2,
+                        aes(x = X1, y = X2,
+                            group = Sim,
+                            shape = Sim, color=Sim), size = 3) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0))
+
+
+
+pl.pp
+
+
+@
+ \vspace*{-0.3cm}
+ \caption{Decision boundaries for PPtree algorithm on 2D simulated data. The partitions generated by PPtree algorithm are oblique to the axis, incorporating the association between the two variables.\label{bounds}}
+\end{figure}
 
 % Should I include some references about interpretable machine learning
 
@@ -104,30 +222,6 @@ This section describes the mapping of diagnostics to visualizations. These are i
 The PPF is composed of individual projection pursuit trees. Figure \ref{pptreeviz1} shows a visual ensemble of plots of a tree model on the crab data. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
 The package \verb#PPtreeViz# provides visual tools to diagnose a PPtree model. The PPF builds on these and modifies a little. The PPtree model is simpler than a regular classification tree because the classes are mostly separated by combinations of variables -- just three projections are needed to see the differences between the four classes.
 
-<<pkg, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(ggplot2)
-library(PPforest)
-library(shiny)
-library(GGally)
-library(productplots)
-library(PPtreeViz)
-library(tidyr)
-library(dplyr)
-library(pracma)
-library(RColorBrewer)
-library(randomForest)
-library(pROC)
-library(gridExtra)
-library(grid)
-library(ggmosaic)
-set.seed(123)
-#  ppf2022 <-PPforest(data = crab, class= "Type", std = TRUE, size.tr = 1 , m = 500, PPmethod = 'LDA', size.p =.33,
-#   lambda = .1, parallel = FALSE, cores = 2, rule = 1)
-# save(ppf2022, file = "ppf2022.RData")
-load("ppf2022.RData")
-load("rf_fish.RData")
- ppf<- ppf2022
-@
 
 
 
@@ -332,28 +426,32 @@ plot(ppf[["output.trees"]][[tree]], main = "", font.size = 12)
 The PPF algorithm calculates variable importance in three ways: permuted importance using accuracy,  and two importance measures based on projection coefficients on standardized variables.
 
 The first importance measure is comparable with the measure defined in the classical random forest algorithm. Importance variable is computed based on the oob cases for the tree $k\;\;(O_k)$ for each $j$ predictor variable.
-Permuted importance of the variable $j$ in the tree $k$ is defined as:
+Permuted importance of the variable $j$ in the tree $k$ is defined in Equation \ref{vi1}.
 
-\[
+\begin{equation}
 VI^{(1)} _{jk} = \frac{\sum_{i \in O_k } I(y_i=\hat y_{ik})-I(y_i=\tilde y_{ik})}{\# O_k}
-\]
+\label{vi1}
+\end{equation}
 
 \noindent where $\hat y_{ik}$ is the predicted class for the observation $i$ in the tree $k$, and $\tilde y_{ik}$ is the predicted class for the observation $i$ in the tree $k$ after permuting the values for variable $j$. The global permuted importance measure is the average importance over all the trees in the forest. This measure is based on comparing the accuracy of classifying oob observations using the true class with permuted (nonsense) class.
 
 The coefficients of each projection are examined to define the other two importance measures. If the variables have been standardized, the magnitude of these values indicates importance. For a single PPtree the variable importance is computed by a weighted sum of the absolute values of the coefficients across nodes, then the weights take the number of classes in each node into account~\citep{lee2013pptree}.
 
-The global variable importance in a PPforest then can be defined in different ways. One way is to average the variable importance from each PPtree across all the trees in the forest.
+The global variable importance in a PPforest then can be defined in different ways. One way is to average the variable importance from each PPtree across all the trees in the forest (Equation \ref{vi2}).
 
-\[
+\begin{equation}
 VI^{(2)}_j=\frac{1}{B}\sum_{k=1}^B \sum_{s= 1}^{S}\frac{|a^{**}_{sjk}|}{G_s }
-\]
+\label{vi2}
+\end{equation}
 
 \noindent where $a^{**}_{sjk}$ is the projected coefficient for node $s$ and variable $j$ in the $k^{th}$ PPtree, and $S$ is the total number of node partitions in the $k^{th}$ tree. Note that $\sum_{s= 1}^{S}\frac{|a^{**}_{sjk}|}{G_s }$ is the importance of the variable $j$ in the PPtree $k$. 
 
-Alternatively, it can be computed as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree .
+Alternatively, it can be computed as a weighted mean of the absolute value of the projection coefficients across all nodes in every tree as shown in Equation \ref{vi3}.
 
-\[VI^{(3)}_j=\frac{1}{B}\frac{1}{G-1}\sum_{k=1}^B\sum_{s = 1}^{S} (1-e_k) I_{sjk}|a^{**}_{sjk}|
-\]
+\begin{equation}
+VI^{(3)}_j=\frac{1}{B}\frac{1}{G-1}\sum_{k=1}^B\sum_{s = 1}^{S} (1-e_k) I_{sjk}|a^{**}_{sjk}|
+\label{vi3}
+\end{equation}
 
 \noindent where $e_k$ is the oob error rate of tree $k$, $I_{sjk}$ is the projection pursuit index value of node $s$ ~\cite{da2021projection}.
 
@@ -707,6 +805,25 @@ t3 <- ternaryshell(ppf, 3, 2, 3)
 
 grid.arrange(t1, t2, t3, ncol = 3)
 
+#vimeoternary fish code
+# library(colorspace)
+# library(RColorBrewer)
+# library(tourr)
+# projct <- t(f.helmert(7)[-1,] )
+# 
+# dat7 <- data.frame(class=ppf[[1]], ppf$votes%*%projct)
+# colnames(dat7)[-1] <- paste("x", 1:7,sep="")
+# pal <- brewer.pal(7,"Dark2") 
+# col <- pal[as.numeric(dat7[, 1])]
+# 
+# edges <- rbind(c(1,0,0,0,0,0,0), c(0,1,0,0,0,0,0), c(0,0,1,0,0,0,0), c(0,0,0,1,0,0,0), 
+#                c(0,0,0,0,1,0,0), c(0,0,0,0,0,1,0),c(0,0,0,0,0,0,1) )%*%projct
+# colnames(edges) <- colnames(dat7)[-1]
+# dd7 <- rbind(dat7, data.frame(class=levels(dat7$class),edges ))
+# 
+# x11()
+# animate_xy(dd7[,2:7], col = col, pch=19,axes ="off", edges=as.matrix(expand.grid(160:166,160:166) )[c(2:7,10:14,18:21, 26:28,34:35,42),])
+# 
 
 @
 \caption{Generalized ternary plot ((G-1) dimensional simplex, here it is a tetrahedron) representation of the vote matrix for four classes. The tetrahedron is shown pairwise. Each point corresponds to one observation and color is the true class. This is close but not a perfect classification since the colors are concentrated in the corners and there are some mixed colors in each corner.}
