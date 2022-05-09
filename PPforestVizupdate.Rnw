@@ -25,6 +25,17 @@
 \usepackage{pdfpages}
 \usepackage{fancyhdr}
 
+\newcommand{\blind}{0}
+
+\newcommand{\blA}{\mbox{\boldmath {\bf A}}}
+\newcommand{\blB}{\mbox{\boldmath {\bf B}}}
+\newcommand{\blW}{\mbox{\boldmath {\bf W}}}
+\newcommand{\blX}{\mbox{\boldmath {\bf X}}}
+\newcommand{\blM}{\mbox{\boldmath {\bf M}}}
+\newcommand{\blx}{\mbox{\boldmath {\bf x}}}
+\newcommand{\bla}{\mbox{\boldmath {\bf a}}}
+\newcommand{\blalpha}{\mbox{\boldmath {\alpha}}}
+
 \begin{document}
 
 \title{Interactive Graphics for Visually Diagnosing Forest Classifiers in R} 
@@ -219,7 +230,31 @@ This section describes the mapping of diagnostics to visualizations. These are i
 
 \subsection{Individual Models: PPtree}
 
-The PPF is composed of individual projection pursuit trees. Figure \ref{pptreeviz1} shows a visual ensemble of plots of a tree model on the crab data. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
+The PPF is composed of individual projection pursuit trees, PPtree algorithm uses a multi-step approach to fit a multi-class model by finding linear combinations to split on based on prjection pursuit algorithm. Two projection pursuit indexes are used to find projections that separate classes,  LDA  \citep{lee2005projection} and PDA \citep{lee2010projection}.
+
+The LDA index is defined as follows:
+
+\begin{equation}
+ \mathbb{I}_{LDA}(\blA) = \left\{
+  \begin{array}{l l}
+    1-\frac{|\blA^T \blW\blA|}{|\blA^T(\blW+\blB)\blA|} &  \text{for}~|\blA^T(\blW+\blB)\blA|\neq 0\\
+    0 &  \text{for}~|\blA^T(\blW+\blB)\blA|= 0
+  \end{array} \right.
+\end{equation}
+
+\noindent where $p\times q$ matrix $\blA = [\bla_1, \bla_2 , . . . , \bla_q ]$ defines an orthonormal projection from $p$-dimensions onto a $q$-dimensional subspace, $\blB=\sum_{g=1}^G n_g(\bar{\mathbf{x}}_{g}-\bar{\mathbf{x}})(\bar{\mathbf{x}}_{g}-\bar{\mathbf{x}})^{T}$ is the $p\times p$ between-group sum of squares,
+$\blW=\sum_{g=1}^{G}\sum_{i\in H_g}(\mathbf{x}_{i}-\bar{\mathbf{x}}_{g})(\mathbf{x}_{i}-\bar{\mathbf{x}}_{g})^T$ is the $p\times p$  within-group sum of squares where $H_g=\{i| y_i = g, i = 1, ..., n\}$, $\bar{\mathbf{x}}_{g}$ is the group mean vector and $\bar{\mathbf{x}}$ the overall mean vector. If the LDA index value is high, there is a large difference between classes.
+
+The PDA index is useful when $n$ is small relative to $p$ and when the variables are highly correlated. In these situations the maximum likelihood variance-covariance matrix estimator will be close to singular, affecting the inverse calculation. The PDA index adjusts the variance-covariance matrix calculation, as follows:
+
+
+\begin{equation}
+\mathbb{I}_{PDA}(\blA,\lambda)=1-\frac{|\blA^T \blW_{PDA}(\lambda)\blA|}{|\blA^T (\blW_{PDA}(\lambda)+\blB) \blA|}
+\end{equation}
+
+\noindent where notation is the same as for the LDA index, with the addition of $\lambda \in [0,1)$ is a shrinkage parameter, and a different within group sum of squares, $\blW_{PDA}(\lambda)=\mbox{diag}(\blW)+(1-\lambda)\mbox{offdiag}(\blW)$.
+
+Figure \ref{pptreeviz1} shows a visual ensemble of plots of a tree model on the crab data using LDA index. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
 The package \verb#PPtreeViz# provides visual tools to diagnose a PPtree model. The PPF builds on these and modifies a little. The PPtree model is simpler than a regular classification tree because the classes are mostly separated by combinations of variables -- just three projections are needed to see the differences between the four classes.
 
 
@@ -882,6 +917,12 @@ Parallel coordinate plots are useful to visualize multivariate numerical data. A
 \centering
 \includegraphics[width=1\linewidth]{figure/fish11.png}
 \caption{Entry page for the web app, focusing on examining cases, in terms of similarity and uncertainty. The top plot shows the data, the remaining plots show similarity of cases and uncertainty in predictions. All of the plots are linked so that selecting elements of one will generate changes in the others. \label{tab1}}
+\end{figure}
+
+\begin{figure}[hbpt]
+\centering
+\includegraphics[width=1\linewidth]{figure/fish11comp.png}
+\caption{Entry page for the web app, focusing on examining cases, for selected points. \label{tab1comp}}
 \end{figure}
 
 The diagram in Figure \ref{tab1diag} illustrates the data pipeline \citep{BAHM88,wickham2009plumbing} for the interactive graphics in the case level tab. Solid lines indicate notifications from the source data to the plots, and dashed lines indicate notification of user action on the plot, which notifies the data source of actions to take. The data table is a reactive object that has a listener associated with it. Each of the plots is reactive and has numerous listeners. When users make selections on a plot, either by clicking or group selection, a change to the data is made in terms of an update on the selected cases. This invokes a note to other plots to re-draw themselves. The linking between plots is effectively one-to-one, based on the row ID of the data. The side-by-side jittered dotplot has $n\times G$ points, but selection can only be done within a dotplot. Selecting in one of the dotplots notifies the data table of the selection which triggers a re-draw of the other dotplots. Mouseovers on the plot pull additional information about the point or line under the cursor but do not link between plots.
