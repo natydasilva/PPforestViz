@@ -61,9 +61,7 @@ The paper introduces an app for visual exploration of tree-based ensemble models
 
 The paper and its accompanying app seem to be a good fit for Computational Statistics, as they apply interesting visualization techniques to a tree-based ensemble model that will surely prove useful for practitioners. 
 
-However, for this potential to materialize the authors should put more emphasis on the limitations of their approach. \textcolor{violet}{TO DO}
-
-In particular, the app focuses on the first three nodes of the trees in question, which would be much less informative in settings requiring deep trees. \textcolor{violet}{The app was modified to adress this issue. Now the user can select the nodes to see, three or more. If there are a lot of nodes will be better to select at most 4 to see better the complete display}
+However, for this potential to materialize the authors should put more emphasis on the limitations of their approach. In particular, the app focuses on the first three nodes of the trees in question, which would be much less informative in settings requiring deep trees. \textcolor{violet}{The app was modified to adress this issue. Now the user can select specific nodes to see (three or more nodes). If there are a lot of nodes will be better to select 4 or less each time to see better the complete display.}
 
 Furthermore, plots such as the parallel coordinate plot would lose their appeal in settings with thousands of variables. A brief discussion of circumstances limiting the usability of the app would address these concerns and allow users to easily determine whether the app is suitable for their application.
 
@@ -75,7 +73,7 @@ Substantive comments
 \begin{enumerate}
 \item p. 8, line 42: The issue of visualizing the tetrahedron is arguably not of first-order importance as it is not as helpful for classification problems with more than four classes. It might be more useful to focus exclusively on the side-by-side jittered dotplot as this approach generalizes in a more straightforward way to problems with more classes.
 
-\textcolor{violet}{As we mentioned in page 7 the ternary plot can be generalized to more than three dimensional space, with G classes, the ternary plot idea is generalized to a G-1 dimensional simplex. Then if we have 4 classes the generalized ternary plot is a tetrahedron as shown in Figure 4 but if we have more than four classes we can also generalize the ternary plot idea. In the fishcatch data used in this paper to illustrate the shiny app there are 7 classes and we generalized the ternary plot to a 6-dimensional simplex as is shown in the last panel of  Figure 6 (6- didmensional simplex shown pairwise), using tourr package you can see better the 6 dimensional simplex in different rotations https://vimeo.com/707047875. The structure is complexbecausethereare7 vertices,21 eddges and 35 faces.}
+\textcolor{violet}{As we mentioned in page 7 the ternary plot can be generalized to more than three dimensional space, with G classes, the ternary plot idea is generalized to a G-1 dimensional simplex. Then if we have 4 classes the generalized ternary plot is a tetrahedron as shown in Figure 4 but if we have more than four classes we can also generalize the ternary plot idea. In the fishcatch data used in this paper to illustrate the shiny app there are 7 classes and we generalized the ternary plot to a 6-dimensional simplex as is shown in the last panel of Figure 6 (6-didmensional simplex shown pairwise), using tourr package you can see better the 6-dimensional simplex in different rotations https://vimeo.com/707047875. The structure is complex because a 6-dimensional simplex has 7 vertices, 21 eddges and 35 faces.}
 
 \item p. 11, line 16: As section 3 discusses all other plots produced by the app it would be useful if it also included an overview of the parallel coordinate plot that only appears in section 4, so the meaning of that plot is not immediately clear (e.g. what is displayed on the vertical axis).
 
@@ -191,7 +189,7 @@ What do the numbers in the grey boxes at the terminal nodes represent?
 
 \item Figures 1 and 2: I see that the potential range for coefficient values for the projection pursuit seem to be between -1 and 1. I imagine this is a feature of the algorithm. Perhaps include in your description of projection pursuit a note about this fact, for those unfamiliar, and mention what optimization criteria is used in it.
 
-\textcolor{violet}{TO DO}
+\textcolor{violet}{Yes, the coefficient values are between -1 and 1 by construction. We find the linear combinations, \textbf{a} which maximize $\frac{a^TBa}{a^TWa}$, where B y W are the between and within group sums of squares. We get $\hat a_1=e_1$ where $e_1...e_s$ are eigenvectors of $W^{-1}B$. In this case we find the 1-D projection optimizing the LDA index. We have included in Section 3 LDA and PDA indexes which are optimized to get the linear projections and it is more clear now how the coefficients are computed. }
 
 \item Page 6: If you use a notation for VI for global variable importance (you define it as the average across k trees), I'd just define it here as an equation and use it in the text (e.g in line 19).
 
@@ -209,7 +207,8 @@ MDS and generalized ternary plot (tetrahedral plot in case there are  four clase
  
 \item Page 9, Figure 4: is the dimension of the simplex always at most 3 or G-1? What would it look like with more classes? I'd clarify whether this only works for your example or whether it can always be drawn.
 
-\textcolor{violet}{In Figure 4 the dimension of the simplex is G-1, since in crab data there are 4 clases in this case we work with a three dimensional simplex. The ternary plot can be generalized to more dimensions and in the interactive web app (Section 4) we present a problem with 7 clases (fishcatch data) and in Figure 6 shows how a generalized ternary plot look like with more classes (6 dimensional simplex). }
+\textcolor{violet}{In Figure 4 the dimension of the simplex is G-1, since in crab data there are 4 clases in this case we work with a three dimensional simplex. Ternary plot can be generalized to more than three dimensional space, with G classes, the ternary plot idea is generalized to a G-1 dimensional simplex. Then if we have 4 classes the generalized ternary plot is a tetrahedron as shown in Figure 4 but if we have more than four classes we can also generalize the ternary plot idea. In the fishcatch data used in this paper to illustrate the shiny app there are 7 classes and we generalized the ternary plot to a 6-dimensional simplex as it is shown in the last panel of Figure 6 (6-didmensional simplex shown pairwise), using tourr package you can see better the 6-dimensional simplex in different rotations https://vimeo.com/707047875. The structure is complex because a 6-dimensional simplex has 7 vertices, 21 eddges and 35 faces.} 
+
 
 \item Page 10, Figure 5: similar remark as before. I think a violin plot or something similar for each class, rather than a jittered dot plot, is more correct. The x-axis for each class is a "fake" axis. I think jittered dot plots should only be used with scatterplots to make sure individual dots can be distinguished.
 
