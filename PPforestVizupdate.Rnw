@@ -66,7 +66,7 @@
 \maketitle
 
 \begin{abstract}
-This article describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this article, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest but could be more broadly applied to other bagged ensembles. Interactive graphics are built in R using the \texttt{ggplot2}, \texttt{plotly}, and \texttt{shiny} packages.
+This article describes structuring data and constructing plots to explore forest classification models interactively. A forest classifier is an example of an ensemble since it is produced by bagging multiple trees. The process of bagging and combining results from multiple trees produces numerous diagnostics which, with interactive graphics, can provide a lot of insight into class structure in high dimensions. Various aspects are explored in this article, to assess model complexity, individual model contributions, variable importance and dimension reduction, and uncertainty in prediction associated with individual observations. The ideas are applied to the random forest algorithm and projection pursuit forest but could be more broadly applied to other bagged ensembles helping in the interpretability deficit of these methods. Interactive graphics are built in R using the \texttt{ggplot2}, \texttt{plotly}, and \texttt{shiny} packages.
 \keywords{Statistical Visualization \and Interactive Visualization \and Interpretable Machine Learning \and Ensemble Model}
 \end{abstract}
 
@@ -75,7 +75,7 @@ This article describes structuring data and constructing plots to explore forest
 \section{Introduction}
 \label{sec:intro}
 
-The random forest (RF) algorithm~\citep{breiman1996bagging} was one of the first ensemble classifiers developed. It combines the predictions from individual classification and regression trees (CART)~\citep{breiman1984cl} built by bagging observations~\citep{breiman1996bagging}. It also samples variables at each tree node. These produce diagnostics in the form of uncertainty in predictions for each observation, importance of variables for the prediction, predictive error for future samples based on out-of-bag (oob) case predictions, and similarity of observations based on how often they group together in the trees.
+The random forest (RF) algorithm~\citep{breiman1996bagging} was one of the first ensemble classifiers developed. It combines the predictions from individual classification and regression trees (CART)~\citep{breiman1984cl} built by bagging observations~\citep{breiman1996bagging} and random predictor sample at each tree node. These produce diagnostics in the form of uncertainty in predictions for each observation, importance of variables for the prediction, predictive error for future samples based on out-of-bag (oob) case predictions, and similarity of observations based on how often they group together in the trees.
 
 Ensemble classifiers have grown in popularity~\citep{dietterish00}~\citep{talbot09}, and the basic ideas behind the random forest can be applied to virtually any type of model. The benefits for classification are reduced variability in predictive error, and the suite of diagnostics provides the potential for better understanding the class structure in the high-dimensional data space. The use of visualization on these diagnostics, in association with multivariate data plots, completes the process to better understand the underlying problem.
 
@@ -87,6 +87,7 @@ There has been some, but not a lot of, research on visualizing classification mo
 This article describes structuring interactive graphics to facilitate visual exploration of ensemble classifiers using RFs and projection pursuit random forests (PPF)~\citep{da2021projection} as examples. The PPF algorithm builds on the projection pursuit tree (PPtree)~\citep{lee2013pptree} algorithm which uses projection pursuit at each tree node to find the best linear combination of variables to separate the classes. Figure \ref{bounds} shows the boundary that would result from a classification tree fitted using the PPtree algorithm (Example from \citep{da2021projection}).
 
 The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in R \citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that helps the user see multivariate relationships and be more efficient in the model diagnosis. Multiple levels of data are constructed for exploration: observation, model, and ensemble summaries.
+The visualization tools presented in this article help open up black-box models and contribute to the interpretability of these methods.
 
 <<pkg, echo=FALSE, message=FALSE, warning=FALSE>>=
 library(ggplot2)
@@ -204,38 +205,38 @@ pl.pp
  \caption{Decision boundaries for PPtree algorithm on 2D simulated data. The partitions generated by PPtree algorithm are oblique to the axis, incorporating the association between the two variables.\label{bounds}}
 \end{figure}
 
-% Should I include some references about interpretable machine learning
-
 The article is structured as follows.  Section \ref{key} describes the ensemble components to be accessed.  Section \ref{visen} maps the ensemble components to the visual elements. The web app is described in \ref{app} and further work is discussed in Section \ref{fur}.
 
+\newpage
 
 \section{Diagnostics in Forest Classifiers}\label{key}
 
 The diagnostics typically available are:
 
 \begin{itemize} \itemsep 0in
-  \item {\em Out-of-bag error:} For each model in the ensemble, some cases of the original data are not used. Predicting the response for these cases gives a better estimate for the error of the model with future data. The oob error rate is a measure for each model that is combined in the ensemble and is used to provide the overall error of the ensemble.
+\item {\em \textbf{Out-of-bag error:}} For each model in the ensemble, some cases of the original data are not used. Predicting the response for these cases gives a better estimate for the error of the model with future data. The oob error rate is a measure for each model that is combined in the ensemble and is used to provide the overall error of the ensemble.\\
   
-  \item {\em Uncertainty measure for each observation:} Across individual (classification) models we can compute the proportion of times that a case is predicted to be each class. If a case is always predicted to be the true class, there is no uncertainty about an observation. Cases that are predicted to be multiple classes, with similar class probabilities, indicate difficulty to classify observations. They may be important by indicating neighborhoods of the data space that would benefit from a more complex model, or more simply, they may be errors in measurements in the data.
+\item {\em \textbf{Uncertainty measure for each observation:}} Across individual (classification) models we can compute the proportion of times that a case is predicted to be each class. If a case is always predicted to be the true class, there is no uncertainty about an observation. Cases that are predicted to be multiple classes, with similar class probabilities, indicate difficulty to classify observations. They may be important by indicating neighborhoods of the data space that would benefit from a more complex model, or more simply, they may be errors in measurements in the data.\\
   
-  \item {\em Variable importance:} Each model uses samples of variables. Thus, the accuracy of the models can be compared when the variable is included or omitted. There are several versions of statistics that use this to provide a measure of the variable importance for prediction.
+\item {\em \textbf{Variable importance:}} Each model uses samples of variables. Thus, the accuracy of the models can be compared when the variable is included or omitted. There are several versions of statistics that use this to provide a measure of the variable importance for prediction.\\
   
-  \item {\em Similarity measure for pairs of observations:} In each model, each pair of observations will be either in the same terminal node or not. This is used to compute a proximity matrix.  Cluster analysis on this matrix can be used to follow up the classification to assess the original labeling. It may suggest improvements or mistakes in original labels.
+\item {\em \textbf{Similarity measure for pairs of observations:}} In each model, each pair of observations will be either in the same terminal node or not. This is used to compute a proximity matrix.  Cluster analysis on this matrix can be used to follow up the classification to assess the original labeling. It may suggest improvements or mistakes in original labels.
 \end{itemize}
-
 In addition to these overall ensemble statistics, each component model has its own diagnostics, measuring error, variables utilized, and class predictions. Visualization will enable the individual models to be examined, relate these to the data and their contribution to the ensemble.
 
-\section{Mapping Ensemble Diagnostics to Visual Components}~\label{visen}
+\section{Mapping Ensemble Diagnostics to Visual Components}
+\label{visen}
 
 This section describes the mapping of diagnostics to visualizations. These are illustrated using the Australian crabs data~\citep{CM74}. The data has 200 cases, 5 predictors, and 4 classes (combinations of species and sex, blue male, blue female, orange male, and orange female). The predictors are: FL (the size of the frontal lobe length, in mm), RW (rear width, in mm), CL (length of mid-line of the carapace, in mm), CW (maximum width of carapace, in mm), BD (depth of the body; for females, measured after displacement of the abdomen, in mm). This is old data, but it provides a good illustration of the visual methods.
 
 \subsection{Individual Models: PPtree}
 
-The PPF is composed of individual projection pursuit trees, PPtree algorithm uses a multi-step approach to fit a multi-class model by finding linear combinations to split on based on prjection pursuit algorithm. Two projection pursuit indexes are used to find projections that separate classes,  LDA  \citep{lee2005projection} and PDA \citep{lee2010projection}.
+The PPF is composed of individual projection pursuit trees, PPtree algorithm uses a multi-step approach to fit a multi-class model by finding linear combinations to split on based on projection pursuit algorithm. Two projection pursuit indexes are used to find projections that separate classes,  LDA  \citep{lee2005projection} and PDA \citep{lee2010projection}.
 
 The LDA index is defined as follows:
 
 \begin{equation}
+\label{lda}
  \mathbb{I}_{LDA}(\blA) = \left\{
   \begin{array}{l l}
     1-\frac{|\blA^T \blW\blA|}{|\blA^T(\blW+\blB)\blA|} &  \text{for}~|\blA^T(\blW+\blB)\blA|\neq 0\\
@@ -255,11 +256,8 @@ The PDA index is useful when $n$ is small relative to $p$ and when the variables
 
 \noindent where notation is the same as for the LDA index, with the addition of $\lambda \in [0,1)$ is a shrinkage parameter, and a different within group sum of squares, $\blW_{PDA}(\lambda)=\mbox{diag}(\blW)+(1-\lambda)\mbox{offdiag}(\blW)$.
 
-Figure \ref{pptreeviz1} shows a visual ensemble of plots of a tree model on the crab data using LDA index. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
+Figure \ref{pptreeviz1} shows a visual ensemble of plots of a tree model on the crab data using LDA index(Equation \ref{lda}) and two variables in each node split. There are three nodes for the four class problem. The nodes of this tree are based on projections of the data; the coefficients of which form the building block to calculate the variable importance. The density plot displays the data projection at each node, and the mosaic plot shows the confusion matrix for the nodes.
 The package \verb#PPtreeViz# provides visual tools to diagnose a PPtree model. The PPF builds on these and modifies a little. The PPtree model is simpler than a regular classification tree because the classes are mostly separated by combinations of variables -- just three projections are needed to see the differences between the four classes.
-
-
-
 
 \begin{figure}[hbpt]
 \centering
@@ -723,9 +721,7 @@ A ternary plot is a triangular diagram used to display compositional data with t
 
 With G classes, the ternary plot idea is generalized to a $(G-1)- dimensional$ simplex~\citep{sutherland2000orca, schloerke}. This is one of the approaches used to visualize the vote matrix and it is included in the interactive web app presented in Section \ref{app}.
 
-For the crab data, $G=4$ and the generalized ternary plot will be a tetrahedron. The  \verb#tourr# package~\citep{wickham2011tourr} can be used to view it (e.g. \url{https://vimeo.com/170522736}).
-
-Figure \ref{tetra} shows the tetrahedron structure for the crab vote matrix shown in three pairwise views. With well-separated classes, the colored points will each concentrate into one of the vertices. This is close but not perfect, indicating some crabs are commonly incorrectly classified. 
+For the crab data, $G=4$ and the generalized ternary plot will be a tetrahedron. Figure \ref{tetra} shows the tetrahedron structure for the crab vote matrix shown in three pairwise views. With well-separated classes, the colored points will each concentrate into one of the vertices. This is close but not perfect, indicating some crabs are commonly incorrectly classified. The \verb#tourr# package~\citep{wickham2011tourr}, tour methods for multivariate data visualization, can be used to view the animated version (e.g. \url{https://vimeo.com/170522736}).
 
 
 \begin{figure}[hbpt]
