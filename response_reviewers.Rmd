@@ -51,7 +51,7 @@ Springer Journals Editorial Office
 
 ## Response to Reviewer 2
 
-\textcolor{violet}{We appreciate all of your feedback. 
+\textcolor{violet}{We appreciate all of your feedback which help to improve our paper. 
  }
 
 
@@ -61,11 +61,11 @@ The paper introduces an app for visual exploration of tree-based ensemble models
 
 The paper and its accompanying app seem to be a good fit for Computational Statistics, as they apply interesting visualization techniques to a tree-based ensemble model that will surely prove useful for practitioners. 
 
-However, for this potential to materialize the authors should put more emphasis on the limitations of their approach. In particular, the app focuses on the first three nodes of the trees in question, which would be much less informative in settings requiring deep trees. \textcolor{violet}{The app was modified to adress this issue. Now the user can select specific nodes to see (three or more nodes). If there are a lot of nodes will be better to select 4 or less each time to see better the complete display.}
+However, for this potential to materialize the authors should put more emphasis on the limitations of their approach. In particular, the app focuses on the first three nodes of the trees in question, which would be much less informative in settings requiring deep trees. \textcolor{violet}{The app was modified to adress this issue. In the new application the user can select specific nodes to see (from one to all the nodes). If there are a lot of nodes will be better to select 4 or less each time to see better the complete display but the application is not limited to see just the first three nodes.}
 
 Furthermore, plots such as the parallel coordinate plot would lose their appeal in settings with thousands of variables. A brief discussion of circumstances limiting the usability of the app would address these concerns and allow users to easily determine whether the app is suitable for their application.
 
-\textcolor{violet}{TO DO}
+\textcolor{violet}{In the discussion section we incorporate the app limitations.}
 
 
 Substantive comments
@@ -81,7 +81,7 @@ Substantive comments
 
 \item p. 13, line 38: I find the choice of the interaction driver for the model tab puzzling. I would argue that the key statistic distinguishing the trees in the ensemble is OOB error so a more natural design choice would be to include jittered points in the OOB error boxplot so that the user can explore the well or poorly performing trees in more detail. I do not have a good intuition for why the user would be interested in exploring trees based on variable importance.
 
-\textcolor{violet}{The second tab was modifyed in different ways taking into account your valuable comments. We have included three main changes in the second tabset, first we have included jittered points in the OOB error boxplot where the user can select trees based in their performance instead of selecting trees based on importance variable. Second, we have included a panel to select the nodes to see in the importance variable plot, the mosaic plot and the density plot. The panel allows you to select more or less than three nodes and the mentioned plots are updated acordingly. Finally, we rearrange some of the plots to make the selection and interaction more intuitive  presented in Figure 8.}
+\textcolor{violet}{The second tab was modifyed in different ways taking into account your valuable comments. We have included three main changes in the second tabset, first we have included jittered points in the OOB error boxplot where the user can select trees based in their performance. Second, we have included a panel to select the nodes to see in the importance variable plot, the mosaic plot and the density plot. The panel allows you to select more or less than three nodes and the mentioned plots are updated acordingly. Finally, we rearrange some of the plots to make the selection and interaction more intuitive  presented in Figure 10.}
 
 
 \item p. 15, line 35: The OOB error plot is somewhat hard to read due to some classes being harder to classify than others, and a potential solution to that would be using a different scale on the vertical axis (e.g. percent of highest OOB error for a class).
@@ -145,6 +145,9 @@ MAIN COMMENTS:
 
 Section 4 in general: since the big point here is that the software is interactive, I think the discussion in this section would be a lot more useful if you illustrated step by step with screenshots an example where your interactive drill-down allows you to quickly discover things. For instance, say there are some outliers in plot A. Then you click on them and see some further details in plot B that help you understand what is going on. In this section you show a bunch of screenshots and label their capabilities, but you don't actually demonstrate an end-to-end example of the interactivity. For instance, in Figure 9 you give an example of a set of actions, why don't you actually show us the results and the changes that occur in a sequence of plots? Furthermore, I would show some actual examples of screenshots of what shows when you hover over observations.
 
+\textcolor{violet}{In Section 4 we have included more details and examples of use and interpreting results to address your comment.}
+
+
 CONTENT COMMENTS:
 
 \begin{enumerate}
@@ -152,7 +155,7 @@ CONTENT COMMENTS:
 I think the paper could also benefit from a simple preliminary example of, say, two features and two classes and showing the plot of the linear combination resulting from projection pursuit. You could even include an image from the original paper.
 
 \textcolor{violet}{Random Forest presents two sources of randomness in the tree: random variable selection and random bootstrap samples. The random variables selection used to node partition, each split are identified from a random subset of all variables. There is not an initial sample of variables for each tree, the sample is for each tree in each  node partition, in each case using all the variables.
-We did not explore formally the sensitivity of the random variable sample size in the importance variable measure. In the algorithm you can select the proportion of variables used in each node partition. In the examples presented in the paper for CRAB and fishcatch data we use 2 variables in each node partition.
+We did not explore formally the sensitivity of the random variable sample size in the importance variable measure. In the algorithm you can select the proportion of variables used in each node partition. In the examples presented in the paper for crab and fishcatch data we use 2 variables in each node partition.
 We have included an image from the original paper with the boundary that would result from a classification tree fitted using the PPtree algorithm to take into account your last request. The plot shows a simple example from simulated data with two features and three classes. The partitions generated by PPtree algorithm are oblique to the axis, incorporating the association between the two variables.
 }
 
@@ -193,7 +196,7 @@ What do the numbers in the grey boxes at the terminal nodes represent?
 
 \item Page 6: If you use a notation for VI for global variable importance (you define it as the average across k trees), I'd just define it here as an equation and use it in the text (e.g in line 19).
 
-\textcolor{violet}{Formulas for all VI were defined in equations and mentionedd in the text. It  is more clear now.}
+\textcolor{violet}{Formulas for all VI were defined in equations and mentioned in the text. It  is more clear now.}
 
 \item Page 6 line 48: does MDS need a citation? Also, can you connect the results in this discussion to the RF graphics, e.g. in terms of same variables with high RF importance being important in MDS? Otherwise, this whole discussion seems unnecessary. If you are doing it simply to understand the data, I would move this section to right after you introduce the data, before you show the other graphics. Here, it seems like a tangent. Also, are these MDS and tetrahedral plots part of your software or do you perform them separately? I would say so explicitly in either case.
 
@@ -216,11 +219,11 @@ MDS and generalized ternary plot (tetrahedral plot in case there are  four clase
 
 \item Page 10, line 40: This sentence is muddled "As Sievert (2020) describes, one of the biggest difficulties for the app in order manage linking between plots is the data structure management for each widget". Furthermore, what does "widget" refer to here? Use a more descriptive term.
 
-\textcolor{violet}{NEED HELP, not sure how to improve this sentence and I do not know what is more descriptive for widget. At their core Shiny widgets are mini-applications created using the shinyApp function.}
+\textcolor{violet}{ At their core Shiny widgets are mini-applications created using the shinyApp function.}
 
 \item Page 10, line 45: If you are just going to demonstrate the interactivity, wouldn't it be better to just continue with the original crab dataset, or have one dataset throughout? Unless there is something particularly interesting about this dataset.
 
-\textcolor{violet}{Yes fishcatch data are more difficutl to classify and then more interesting to show some of the results. For simplicity to describe the main plot of the app we use crab data but to describe the app we prefer to present a more complex problem, more clases, umbalanced data...}
+\textcolor{violet}{Yes fishcatch data are more difficult to classify and then more interesting to show some of the results. For simplicity to describe the main plot of the app we use crab data but to describe the app we prefer to present a more complex problem, more clases, umbalanced data...}
 
 \item Page 12 Figure 6: in the enhanced PCP, you say all variable pairs are shown at least once as neighbors. Is there a way, either through ordering or adding dividing lines, etc. to help a reader find the pair they are interested in? Or is there some sorting done so that, the pairs are ordered from left to right in terms of some metric of "interesting-ness"? There seems to be no order in the given plot. Do you automatically pick the number of dimensions to show in MDS? Should the tetrahedral plots here have some kind of axis labels? See Figure 7 where they do.
 
