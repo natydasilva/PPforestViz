@@ -37,7 +37,9 @@
 \newcommand{\blalpha}{\mbox{\boldmath {\alpha}}}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+
+
+
 
 \title{Interactive Graphics for Visually Diagnosing Forest Classifiers in R} 
 
@@ -110,7 +112,7 @@ set.seed(123)
 #   lambda = .1, parallel = FALSE, cores = 2, rule = 1)
 # save(ppf2022, file = "ppf2022.RData")
 load("ppf2022.RData")
-load("rf_fish.RData")
+load("rf_fish.Rdata")
  ppf<- ppf2022
 @
 
