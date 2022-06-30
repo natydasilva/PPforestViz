@@ -37,6 +37,7 @@
 \newcommand{\blalpha}{\mbox{\boldmath {\alpha}}}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 
 

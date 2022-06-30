@@ -13,12 +13,16 @@ Our responses to the review are written in \textcolor{violet}{violet}.
 
 ## Response to Editor
 
+<!--
 Dear Mrs. da Silva:
+-->
 
 We have received the reports from our advisors on your manuscript, "Interactive Graphics for Visually Diagnosing Forest Classifiers in R", 
 Based on the advice received, the Editor feels that your manuscript could be accepted for publication should you be prepared to incorporate minor revisions.
 When preparing your revised manuscript, you are asked to carefully consider the reviewer comments which are attached, and submit a list of responses to the comments.
 Your list of responses should be uploaded as a file in addition to your revised manuscript.
+
+<!--
 
 TO VIEW REVIEWER ATTACHMENTS (should there be any), please login to the journal site as "Author" and access "Submission Needing Revision" from the Author Main Menu.
 On the next page display, navigate on the "Action Links" and select "View Reviewer Attachments" from the selection box. This will redirect you to the page that will allow you to "Download" and view the reviewer report attachments. Then, proceed with revising your manuscript.
@@ -45,9 +49,9 @@ Best regards,
 Springer Journals Editorial Office
 %JOURNALFULLTITLE
 
+-->
 
-
-\textcolor{violet}{Thank you. We appreciate the chance to do a further revision, and hope that these changes satisfy the AE and reviewer.}
+\textcolor{violet}{Thank you. We appreciate the chance to do a further revision, and hope that these changes are satisfactory.}
 
 ## Response to Reviewer 2
 
