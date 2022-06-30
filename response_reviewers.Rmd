@@ -69,7 +69,7 @@ However, for this potential to materialize the authors should put more emphasis 
 
 Furthermore, plots such as the parallel coordinate plot would lose their appeal in settings with thousands of variables. A brief discussion of circumstances limiting the usability of the app would address these concerns and allow users to easily determine whether the app is suitable for their application.
 
-\textcolor{violet}{In the discussion section we incorporate the app limitations.}
+\textcolor{violet}{The discussion has been extended to include limitations.}
 
 
 Substantive comments
