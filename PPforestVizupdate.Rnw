@@ -51,15 +51,18 @@
 
 %\authorrunning{Short form of author list} % if too long for running head
 
-\institute{Natalia da Silva \at
-              Instituto de Estadística (IESTA), Universidad de la República\\
-              \email{natalia.dasilva@fcea.edu.uy}
+\institute{Corresponding author: Natalia da Silva \at
+              Instituto de Estadística (IESTA), Universidad de la República, Montevideo, Uruguay.\\
+              \email{natalia.dasilva@fcea.edu.uy}\\
+              ORCID:0000-0002-6031-7451\\
            \and
           Dianne Cook \at 
-          Department of Econometrics and Business Statistics, Monash University\\
-          \email{dicook@monash.edu}\and
+          Department of Econometrics and Business Statistics, Monash University, Melbourne, Australia.\\
+          \email{dicook@monash.edu}\\
+          ORCID:0000-0002-3813-7155\\
+          \and
           Eun-Kyung Lee \at
-          Department of Statistics, Ewha Womans University\\
+          Department of Statistics, Ewha Womans University, Seoul, South Korea.\\
           \email{lee.eunk@gmail.com}
 }
 

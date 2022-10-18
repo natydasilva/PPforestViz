@@ -1,4 +1,54 @@
-\documentclass[smallextended,natbib]{svjour3}  
+\documentclass[smallextended,natbib]{svjour3}\usepackage[]{graphicx}\usepackage[]{xcolor}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}  
 \smartqed  % flush right qed marks, e.g. at end of proof
 \usepackage{graphicx}
 \usepackage{array,multirow,graphicx}
@@ -35,7 +85,7 @@
 \newcommand{\blx}{\mbox{\boldmath {\bf x}}}
 \newcommand{\bla}{\mbox{\boldmath {\bf a}}}
 \newcommand{\blalpha}{\mbox{\boldmath {\alpha}}}
-
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 
 
@@ -51,15 +101,18 @@
 
 %\authorrunning{Short form of author list} % if too long for running head
 
-\institute{Natalia da Silva \at
-              Instituto de Estadística (IESTA), Universidad de la República\\
-              \email{natalia.dasilva@fcea.edu.uy}
+\institute{Corresponding author: Natalia da Silva \at
+              Instituto de Estadística (IESTA), Universidad de la República, Montevideo, Uruguay.\\
+              \email{natalia.dasilva@fcea.edu.uy}\\
+              ORCID:0000-0002-6031-7451\\
            \and
           Dianne Cook \at 
-          Department of Econometrics and Business Statistics, Monash University\\
-          \email{dicook@monash.edu}\and
+          Department of Econometrics and Business Statistics, Monash University, Melbourne, Australia.\\
+          \email{dicook@monash.edu}\\
+          ORCID:0000-0002-3813-7155\\
+          \and
           Eun-Kyung Lee \at
-          Department of Statistics, Ewha Womans University\\
+          Department of Statistics, Ewha Womans University, Seoul, South Korea.\\
           \email{lee.eunk@gmail.com}
 }
 
@@ -92,119 +145,13 @@ This article describes structuring interactive graphics to facilitate visual exp
 The visualization approach is consistent with the framework in \cite{wickham2015visualizing}, and the implementation is built on the newest interactive graphics available in R \citep{RCore}. The purpose is to provide readily available tools for users to explore and improve ensemble fits and obtain an intuition for the underlying class structure in data. Interactive plots are a key component for model visualization that helps the user see multivariate relationships and be more efficient in model diagnosis. Multiple levels of data are constructed for exploration: observation, model, and ensemble summaries.
 The visualization tools presented in this article help open up black-box models and contribute to the interpretability of these methods.
 
-<<pkg, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(ggplot2)
-library(PPforest)
-library(shiny)
-library(GGally)
-library(productplots)
-library(PPtreeViz)
-library(tidyr)
-library(dplyr)
-library(pracma)
-library(RColorBrewer)
-library(randomForest)
-library(pROC)
-library(gridExtra)
-library(grid)
-library(ggmosaic)
-library(patchwork)
-set.seed(123)
-#  ppf2022 <-PPforest(data = crab, class= "Type", std = TRUE, size.tr = 1 , m = 500, PPmethod = 'LDA', size.p =.33,
-#   lambda = .1, parallel = FALSE, cores = 2, rule = 1)
-# save(ppf2022, file = "ppf2022.RData")
-load("ppf2022.RData")
-load("rf_fish.Rdata")
- ppf<- ppf2022
-@
+
 
 \begin{figure}[!t]
-<<boundss, cache=FALSE, echo=FALSE, fig.height=5, fig.width=8, message=FALSE>>=
-grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
-
-  plots <- list(...)
-  position <- match.arg(position)
-  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
-  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
-  lheight <- sum(legend$height)
-  lwidth <- sum(legend$width)
-  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
-  gl <- c(gl, ncol = ncol, nrow = nrow)
-
-  combined <- switch(position,
-       "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
-                   legend,
-                   ncol = 1,
-                   heights = unit.c(unit(1, "npc") - lheight, lheight)),
-       "right" = arrangeGrob(do.call(arrangeGrob, gl),
-                   legend,
-                   ncol = 2,
-                   widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
-
-  grid.draw(combined)
-}
-
-simu3 <- function(mux1, mux2, muy1, muy2, muz1, muz2,
-                  cor1, cor2, cor3) {
-  bivn <- MASS::mvrnorm(100, mu = c(mux1, mux2),
-                  Sigma = matrix(c(1, cor1, cor1, 1), 2))
-  bivn2 <- MASS::mvrnorm(100, mu = c(muy1, muy2),
-                   Sigma = matrix(c(1, cor2, cor2, 1), 2))
-  bivn3 <- MASS::mvrnorm(100, mu = c(muz1, muz2),
-                   Sigma = matrix(c(1, cor3, cor3, 1), 2))
-
-  d1 <- data.frame(Sim = "sim1", bivn, stringsAsFactors = TRUE)
-  d2 <- data.frame(Sim = "sim2", bivn2, stringsAsFactors = TRUE)
-  d3 <- data.frame(Sim = "sim3", bivn3, stringsAsFactors = TRUE)
-  rbind(d1, d2, d3)
-}
-
-set.seed(666)
-dat.pl2 <- simu3(-1,0.6,0,-0.6, 2,-1,0.95, 0.95, 0.95)
-dat.plnew <- simu3(0,0.6,0,-0.6, 0,-1,-0.1, -0.1, -0.1)
-
-
-grilla <- expand.grid(X1 = seq(-4,4.8,,100),
-                            X2 = seq(-4.3,3.3,,100))
-
-pptree <- PPtreeViz::PPTreeclass(Sim~., data = dat.pl2, "LDA")
-ppred.sim <- PPtreeViz::PPclassify(pptree, test.data = grilla,
-                                   Rule = 6)
-grilla$ppred<-ppred.sim[[2]]
-
-rpart.crab <- rpart::rpart(Sim ~ X1 + X2, data = dat.pl2)
-rpart.pred <- predict(rpart.crab, newdata = grilla, type="class")
-
-bnds <- data.frame(
-  a = c(pptree$splitCutoff.node[[1]] / pptree$projbest.node[[3]],
-      pptree$splitCutoff.node[[2]] / pptree$projbest.node[[4]]),
-  b = c(-pptree$projbest.node[[1]] / pptree$projbest.node[[3]],
-      -pptree$projbest.node[[2]] / pptree$projbest.node[[4]]))
-p <- ggplot(data = grilla ) +
-       geom_point(aes(x = X1, y = X2,
-                  color = as.factor(ppred),
-                  shape=as.factor(ppred)),
-                  alpha = .20) +
-      scale_colour_brewer(name="Class", type="qual",
-                      palette = "Dark2") +
-
-      scale_shape_discrete(name = 'Class') +
-      theme_bw() +
-      theme(aspect.ratio = 1, legend.position="none")
-
-pl.pp <- p + geom_point(data = dat.pl2,
-                        aes(x = X1, y = X2,
-                            group = Sim,
-                            shape = Sim, color=Sim), size = 3) +
-  scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous(expand = c(0,0))
-
-
-
-pl.pp
-
-
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{boundss-1} 
+\end{knitrout}
  \vspace*{-0.3cm}
  \caption{Decision boundaries for PPtree algorithm on 2D simulated data. The partitions generated by PPtree algorithm are oblique to the axis, incorporating the association between the two variables.\label{bounds}}
 \end{figure}
@@ -264,197 +211,12 @@ The package \verb#PPtreeViz# provides visual tools to diagnose a PPtree model. T
 
 \begin{figure}[hbpt]
 \centering
-<<trcomb, echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=7, results='hide', error=FALSE>>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{trcomb-1} 
 
-tree <- 11
-
-#Data trans density and mosaic
-dat_dens <- function(PPclassOBJ, node.id, Rule, legend = TRUE, std = TRUE,
-                     image = FALSE, diff.prop = 0.2,c1=FALSE) {
-
-  searchGroup <- function(node.id, TS, gName) {
-    flag <- TRUE
-    sel.id <- TS[node.id, 2:3]
-    LR.id <- c(TRUE, FALSE)
-    sel.group <- NULL
-    i <- 1
-    while ((sel.id[i] != 0) && (i < length(sel.id))) {
-      if (TS[sel.id[i], 2] != 0) {
-        sel.id <- c(sel.id, TS[sel.id[i], 2:3])
-        if (LR.id[i])
-          LR.id <- c(LR.id, c(TRUE, TRUE))
-        else LR.id <- c(LR.id, c(FALSE, FALSE))
-      }
-      if (TS[sel.id[i + 1], 2] != 0) {
-        sel.id <- c(sel.id, TS[sel.id[i + 1], 2:3])
-        if (LR.id[i + 1])
-          LR.id <- c(LR.id, c(TRUE, TRUE))
-        else LR.id <- c(LR.id, c(FALSE, FALSE))
-      }
-      i <- i + 2
-    }
-    sel.Name <- TS[sel.id[which(TS[sel.id, 2] == 0)], 3]
-    selName <- sort(gName[sel.Name])
-    L.list <- sort(gName[sel.Name[LR.id[which(TS[sel.id,
-                                                 2] == 0)]]])
-    R.list <- sort(gName[sel.Name[!LR.id[which(TS[sel.id,
-                                                  2] == 0)]]])
-    return(list(selName = selName, Llist = L.list, Rlist = R.list))
-  }
-
-  TS <- PPclassOBJ$Tree.Struct
-  Alpha <- PPclassOBJ$projbest.node
-  cut.off <- PPclassOBJ$splitCutoff.node
-  origdata <- PPclassOBJ$origdata
-  origclass <- PPclassOBJ$origclass
-  p <- ncol(origdata)
-  gName <- names(table(origclass))
-
-  if (TS[node.id, 2] != 0) {
-    SG.result <- searchGroup(node.id, TS, gName)
-    selG <- SG.result$selName
-    selL <- SG.result$Llist
-    selR <- SG.result$Rlist
-    sel.id <- NULL
-    LR.class <- NULL
-    for (i in 1:length(selG)) {
-      sel.id <- c(sel.id, which(origclass == selG[i]))
-      LR.class <- c(LR.class, rep(ifelse(sum(selL == selG[i]) !=
-                                           0, "L", "R"), length(which(origclass == selG[i]))))
-    }
-    proj.data <- c(as.matrix(origdata) %*% as.matrix(Alpha[TS[node.id,
-                                                              4], ]))[sel.id]
-
-
-    proj.class <- origclass[sel.id]
-    plot.data <- data.frame(proj.data = proj.data, origclass = proj.class,
-                            cut = cut.off[TS[node.id, 4], Rule], node.id =node.id, LR.class,Dir=as.factor(proj.data>cut.off[TS[node.id, 4], Rule]))
-    colnames(plot.data)[2]<-"Class"
-
-
-    plot.data
-
-  }
-}
-
-PPtree_dens <- function(ppf, tr, nodes = NULL, pos ="none") {
-
-  if(length(ppf[[8]][[tr]]$Tree.Struct[ppf[[8]][[tr]]$Tree.Struct[,4]!=0,1])<3){
-    ns =length(ppf[[8]][[tr]]$Tree.Struct[ppf[[8]][[tr]]$Tree.Struct[,4]!=0,1])
-  }else{
-    ns=3
-  }
-  if(is.null(nodes)){
-    nodes <- ppf[[8]][[tr]]$Tree.Struct[ppf[[8]][[tr]]$Tree.Struct[,4]!=0,1][1:ns]
-  }
-  nn <- data.frame(nn = nodes)
-  densf <- function(x) {
-    dat_dens(PPclassOBJ = ppf[["output.trees"]][[tr]],
-             node.id = x,
-             Rule = 1)
-
-  }
-
-dat_pl <- lapply(as.list(nodes), densf) %>% bind_rows(.id='node')
-
-  myColors <- brewer.pal(dim(unique(ppf$train[ppf$class.var]))[1], "Dark2")
-  names(myColors) <- levels(ppf$train[ppf$class.var][, 1])
-  dat_pl$Class <- as.factor(dat_pl$Class)
-
-  if(is.factor(ppf$train[ppf$class.var][, 1])){
-    levels(dat_pl$Class) <-  levels(ppf$train[ppf$class.var][, 1])
-
-  }else{
-    levels(dat_pl$Class) <-  levels(as.factor(ppf$train[ppf$class.var][, 1]))
-  }
-
-  p1 <- dat_pl %>% filter(node.id %in%nodes) %>% mutate(node.id = paste("Node",node.id)) %>%
-    ggplot( aes(  x = proj.data, group = Class, fill = Class ) ) +
-    geom_density(alpha = .5) + facet_grid(~ node.id, scales = 'free') +
-    scale_fill_manual(values = myColors, labels=c("BF", "BM", "OF", "OM"), name="") +geom_vline(aes(xintercept = cut),
-                                                      linetype = "dashed",
-                                                      color = 2) + labs(x="") +
-    scale_x_continuous( breaks = c(-0.5,0,0.5),
-                    limits=c(-0.5,0.5)) +theme(axis.text.x = element_text(size=8))
-
-
-
-
-
-  p1 + theme(legend.position = pos,aspect.ratio = 1) +
-    guides(col=guide_legend(nrow = 2))
-}
-
-
-p1b <- PPtree_dens(ppf, tree, nodes = c(1,2,3), pos="none")
-
-#Mosaic plot Tab 2
-PPtree_mosaic <- function(ppf,tr, nodes = NULL, pos="none"){
-  if(length(ppf[[8]][[tr]]$Tree.Struct[ppf[[8]][[tr]]$Tree.Struct[,4]!=0,1])<3){
-    ns =length(ppf[[8]][[tr]]$Tree.Struct[ppf[[8]][[tr]]$Tree.Struct[,4]!=0,1])
-  }else{
-    ns=3
-  }
-
-  if(is.null(nodes)){
-    nodes <- ppf[[8]][[tr]]$Tree.Struct[ppf[[8]][[tr]]$Tree.Struct[,4]!=0,1][1:ns]
-  }
-  nn <- data.frame(nn = nodes)
-
-  densf <- function(x){
-    dat_dens(PPclassOBJ=ppf[[8]][[tr]],node.id=x,Rule=1)
-  }
-
-dat_pl <- lapply(as.list(nodes), densf) %>% bind_rows(.id='node')
-  levels(dat_pl$Dir)<-c("Left", "Right")
-  myColors <- brewer.pal(length( unique( ppf[[8]][[tr]]$origclass ) ), "Dark2")
-  names(myColors) <- levels(dat_pl$Class)
-
-  dat_mosaic <- data.frame( with(dat_pl, table(Class, Dir,node.id) ) )
-
-
-  p1 <- dat_mosaic %>% filter(node.id %in%nodes) %>% mutate(node.id = paste("Node",node.id))%>% ggplot() +
-    geom_mosaic( aes(weight = Freq, x = product(Class,Dir) ,fill = Class),  offset=.005)+facet_grid(~node.id)+
-    scale_fill_manual(values = myColors) + theme(legend.position=pos,axis.text.x  = element_text(angle=90, vjust=0.5),aspect.ratio = 1) +xlab("")
-
- p1
-
-}
-
-p1c <- PPtree_mosaic(ppf, tree, nodes = c(1,2,3))
-
-
-nodes <- nrow(ppf[["output.trees"]][[tree]]$projbest.node)
-projbest.node <- ppf[["output.trees"]][[tree]]$projbest.node
-coefs <- data.frame(node = as.factor(1:nodes) , projbest.node)
-colnames(coefs)  <- c("node", colnames(ppf$train[, -1]))
-coefs <- coefs %>% gather(variable, value,-node) %>% mutate(node = paste("Node",node))
-
-p1d <-
-  coefs %>%
-  ggplot(aes(x = variable, y = value)) + geom_segment(aes(yend = 0, xend = variable), size = 3) +
-  facet_grid(node ~ .) + geom_hline(yintercept = 0) + geom_hline(
-    yintercept = c(-1, 1) * 1 / sqrt(ncol(ppf$train[, -1])), col = 2,
-    linetype = "dashed") + labs(y = "Coefficients")
-
-g_legend <- function(a.gplot){
-  tmp <- ggplot_gtable(ggplot_build(a.gplot))
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-  legend <- tmp$grobs[[leg]]
-  return(legend)
-}
-
-layoutmat <- cbind(c(1, 1, 1), c(2, 3, 4))
-
-labpl <-PPtree_dens(ppf, tree, nodes =c(1,2,3), pos="bottom")
-ppf[["output.trees"]][[tree]]$origclass <-ppf[["output.trees"]][[tree]]$origclass %>% recode(`1` ="BF", `2`="BM", `3`="OF",`4`="OM" )
-
-plot(ppf[["output.trees"]][[tree]], main = "", font.size = 12)
-         grid.arrange(p1d , p1b, p1c,  g_legend(labpl),layout_matrix=layoutmat  ,
-       widths =c(2,2) ,heights=c(2,2,.5), as.table =TRUE)
-
-
-@
+\includegraphics[width=\maxwidth]{trcomb-2} 
+\end{knitrout}
 \caption{Visualizing the PPtree model of the crab data. The tree has three nodes (top). The density plots show the data projections at each node, colored by group (middle). The dashed vertical red line indicates the split value of each node. Node 1 separates the sexes. Node 2 separates males from species and node 3 separates females from species. Mosaic plots of the confusion table for each split (bottom). Node 1 shows the clear split of sexes, with a small number of misclassifications. Node 2 where BM are separated from OM with a small number of misclassifications. Node 3 where BF are separated from OF, almost perfect classification.\label{pptreeviz1}}
 \end{figure}
 
@@ -498,127 +260,10 @@ For each tree in the forest, different decision rules are defined; the resulting
 
 \begin{figure}[hbpt]
 \centering
-<<treenode, echo=FALSE, warning=FALSE, message=FALSE,fig.height=12,fig.width=12>>=
-
-# Jittered side by side plot with the absolute importance variable for a each tree in each node partition. The red dot in each
-#facet identified a specific tree in the forest. In crab data we have two points for each node partition because in each node
-# we have selected to variables at random.
-
-impotree <- function(data,ppf, nodes = c(1, 2, 3) ){
-
-bnf <- function(x) {
-  bn <- abs(x$projbest.node)
-  bn[bn == 0] <- NA
-  data.frame(node = 1:dim(x$projbest.node)[1], bn)
-}
-
-bestnode <- ppf[["output.trees"]] %>%  lapply(bnf) %>% bind_rows()
-
-colnames(bestnode)[-1] <- colnames(data[, -1])
-bestnode$node <- as.factor(bestnode$node)
-
-aux <- bestnode %>% filter(node %in% nodes) %>% mutate(ids = rep(1:ppf$n.tree, each = length(nodes))) %>% mutate(node = paste("Node",node))%>% gather(var, value, -ids, -node)
-
-aux$Variables <- as.numeric(as.factor(aux$var) )
-aux$Abs.importance <- round( aux$value, 2)
-
-p <- ggplot(filter(aux, !ids %in% tree),
-            aes(x = Variables , y = Abs.importance , group = ids)) + geom_jitter(height = 0, size = I(4),
-                                                                                 alpha = 0.2) +
-  facet_grid(node ~ .) + scale_x_discrete(limits = levels(as.factor(aux$var))) +
-  theme(legend.position = "none")
-
-
-   p + geom_jitter(
-  data = filter(aux, ids %in% tree),
-   aes(
-    x = Variables ,
-    y = Abs.importance ,
-    group = ids,
-    colour = "red"
-  ),
-  height = 0,
-  size = I(4)
-) + facet_grid(node ~ .)  +
-  theme(legend.position = "none") + labs(y = "Absolute coefficient")
-}
-
-
-   pimp <- impotree(crab, ppf )
-
-
-# This plot show a scatter plot for each of the two variables used in the node partition. The line represents the boundary defined
-# in each node partition.
-
-# function to select the 2 variables used in each node partition in each tree
-dat_2d <- function(node) {
-  indtree <- ppf[["output.trees"]][[tree]]
-  sel <- (1:(ncol(ppf$train) - 1))[indtree$projbest.node[node, ] !=0] #variables used in the specific node partition
-  aux <- ppf$train[ppf$oob.obs[node, ] == 0, c("Type", colnames(ppf$train[, -1])[sel[1]], colnames(ppf$train[, -1])[sel[2]])]
-  aux
-}
-
-myColors <- brewer.pal(length(unique(ppf$train[, ppf$class.var])), "Dark2")
-
-#This function  defines the intercept and the slope of the decision boundary for the scatterplot with the two selected variables, for each node partition.
-# Since in each node there is a two step projection one to transform the problem in a two clkass problm
-# and the second to separate the two new classes.
-#The decision are made if A'X >c asign to right node else to left.
-#  a1x1 + a2x2<c (c based on rule 1) we are using Rule 1 then we define the splope as - cutoff is is based on rule 1 -
-# a1x1 < c -a2x2
-#x1=(c -a2x2)/a1
-# c/a1 is the intercept
-# and a2/a1 is the slope
-
-interslope <- function(node){
-  indtree <- ppf[["output.trees"]][[tree]]
-  ppf$train[,-1]
-  sel <- (1:(ncol(ppf$train) - 1))[indtree$projbest.node[node, ] !=0] # select the oob observations for selected tree
-  intercept <- indtree$splitCutoff.node[node, 1] / indtree$projbest.node[node, sel[1]]
-  slope <- -indtree$projbest.node[node, sel[2]] / indtree$projbest.node[node, sel[1]]
-
-  return(list(intercept,slope))
-  }
-
-
-d_boundary <- function(node){
-  indtree <- ppf[["output.trees"]][[tree]]
-  sel <- (1:(ncol(ppf$train) - 1))[indtree$projbest.node[node, ] !=0]
-  if(node%in%1) dat = dat_2d(node)
-  if(node%in%2) dat = dat_2d(node) %>%  filter(Type %in% c("BlueMale", "OrangeMale") )
-  if(node%in%3) dat = dat_2d(node) %>%  filter(Type %in% c("BlueFemale", "OrangeFemale") )
-
-   levels(dat$Type) <- c("BF","BM", "OF", "OM")
-
-  p1 <- ggplot(data = dat) + geom_point(ggplot2::aes_string(y = (colnames(dat_2d(node ))[[2]]),
-                                                            x = colnames(dat_2d(node ))[[3]],
-                                                            color =  colnames(dat_2d(node ))[[1]]),
-                                        alpha = .5, size = I(4)) + xlim(c(min(dat[,2],dat[,3]),max(dat[,2],dat[,3]))) + ylim(c(min(dat[,2],dat[,3]),max(dat[,2],dat[,3]) ))+
-    geom_abline(intercept = interslope(node)[[1]], slope = interslope(node)[[2]] ,size = 1 ) +
-    labs(color = "Class") + theme( aspect.ratio = 1) + labs(color = "Class")
-
-  if(node%in%1){
-    p1 <- p1 +  scale_colour_brewer(name = "Class", type = "qual", palette = "Dark2")
-  }
-  if(node%in%2){
-    p1 <-   p1 +  scale_color_manual(values = myColors[c(2,4)])
-  }
-  if(node%in%3){
-    p1<-  p1 +  scale_color_manual(values = myColors[c(1,3)])
-  }
-  p1
-}
-
-p1 <-  d_boundary(1)
-p2 <-  d_boundary(2)
-p3 <-  d_boundary(3)
-
-# combined plot with importance variable for each tree and node partition and SP plot with boundary in each node
-
-  grid.arrange(pimp, arrangeGrob(p1, p2, p3, ncol=1), ncol=2)
-
-
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{treenode-1} 
+\end{knitrout}
 \caption{Visualizing the variable importance of all the trees in the forest, for three nodes. Every particular node of each tree has an importance value for the corresponding variable. The values for the whole forest are displayed using a side-by-side jittered dot plot. The importance values are the absolute values of the projection coefficients. The red points correspond to these values for the tree shown in Figure \ref{pptreeviz1}. Two variables are randomly selected at each node for creating the best projection, and split. The plots at right show the variables used and the split made at each of the nodes of this tree.  \label{impotree}}
 \end{figure}
 
@@ -633,89 +278,10 @@ Multidimensional scaling (MDS) is used to reduce the dimension of this matrix, t
 
 \begin{figure}[hbpt]
 \centering
-<<mds, echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=7.5>>=
-  #Multidimensional scaling plot using proximity matrix information from PPforest for CRAB
-mdspl2d <- function(ppf, lege = "bottom", siz = 3, k = 2) {
-  #n.class <- length(levels(ppf[[1]])) #ppf$train %>% select_(ppf$class.var) %>% unique() %>% nrow()
-  #lev <- levels(ppf[[1]]) #ppf$train %>% select_(ppf$class.var) %>% sapply(levels) %>% as.factor()
-
-  d <- diag(nrow(ppf$train))
-  d <- as.dist(d + 1 - ppf$proximity)
-  rf.mds <- stats::cmdscale(d, eig = TRUE,  k = k)
-  colnames(rf.mds$points) <- paste("MDS", 1:k, sep = "")
-  #nlevs <- nlevels(ppf$train[, 1])
-
-  df <- data.frame(Class = ppf$train[, 1], rf.mds$points)
-  #if (lege) {
-  mds <- ggplot2::ggplot(data = df) +
-   geom_point(ggplot2::aes(x = MDS1, y = MDS2, color = Class),
-              size = I(siz), alpha = .5) +
-   scale_colour_brewer(type = "qual", palette = "Dark2", name = "Class") +
-   theme(legend.position = lege, aspect.ratio = 1)
-  #}
-  #else  {
-  #  mds <- ggplot2::ggplot(data = df) +
-  #    geom_point(ggplot2::aes(x = MDS1, y = MDS2, color = Class),
-  #               size = I(siz), alpha = .5) +
-  #    scale_colour_brewer(type = "qual", palette = "Dark2", name = "Class") +
-  #    theme(legend.position = "none", aspect.ratio = 1)
-  #}
-  mds
-}
-
-
-grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
-
-  plots <- list(...)
-  position <- match.arg(position)
-  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
-  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
-  lheight <- sum(legend$height)
-  lwidth <- sum(legend$width)
-  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
-  gl <- c(gl, ncol = ncol, nrow = nrow)
-
-  combined <- switch(position,
-       "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
-                   legend,
-                   ncol = 1,
-                   heights = unit.c(unit(1, "npc") - lheight, lheight)),
-       "right" = arrangeGrob(do.call(arrangeGrob, gl),
-                   legend,
-                   ncol = 2,
-                   widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
-  #grid.newpage()
-  grid.draw(combined)
-}
-
-k=3
-lege = "none"
-siz = 3
-d <- diag(nrow(ppf$train))
-d <- as.dist(d + 1 - ppf$proximity)
-rf.mds <- stats::cmdscale(d, eig = TRUE,  k = k)
-colnames(rf.mds$points) <- paste("MDS", 1:k, sep = "")
-df <- data.frame(Class = ppf$train[, 1], rf.mds$points)
-levels(df$Class) <- c("BF", "BM", "OF", "OM")
-p12 <-  ggplot2::ggplot(data = df) +
-  geom_point(ggplot2::aes(x = MDS1, y = MDS2, color = Class),
-             size = I(siz), alpha = .5) +
-  scale_colour_brewer(type = "qual", palette = "Dark2", name = "Class") +
-  theme(legend.position = lege, aspect.ratio = 1)
-p13 <-  ggplot2::ggplot(data = df) +
-  geom_point(ggplot2::aes(x = MDS1, y = MDS3, color = Class),
-             size = I(siz), alpha = .5) +
-  scale_colour_brewer(type = "qual", palette = "Dark2", name = "Class") +
-  theme(legend.position = lege, aspect.ratio = 1)
-p23 <-  ggplot2::ggplot(data = df) +
-  geom_point(ggplot2::aes(x = MDS2, y = MDS3, color = Class),
-             size = I(siz), alpha = .5) +
-  scale_colour_brewer(type = "qual", palette = "Dark2", name = "Class") +
-  theme(legend.position = lege, aspect.ratio = 1)
-
-grid_arrange_shared_legend(p12, p13, p23, ncol=3, nrow=1)
-
-  @
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{mds-1} 
+\end{knitrout}
 \caption{Examining similarity between cases, using pairwise plots of multidimensional scaling into a three-dimensional space. It can be seen that most cases are grouped closely with their class, and particularly that the two species are distinct. There is more confusion of cases between the sexes. \label{prox1}}
 \end{figure}
 
@@ -733,153 +299,10 @@ For the crab data, $G=4$ and the generalized ternary plot will be a tetrahedron.
 
 \begin{figure}[hbpt]
 \centering
-<<ternary, echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=7.5>>=
-f.helmert <- function(d)
-{
-  helmert <- rep(1 / sqrt(d), d)
-  for (i in 1:(d - 1))
-  {
-    x <- rep(1 / sqrt(i * (i + 1)), i)
-    x <- c(x, -i / sqrt(i * (i + 1)))
-    x <- c(x, rep(0, d - i - 1))
-    helmert <- rbind(helmert, x)
-  }
-
-  return(helmert)
-}
-
-makePairs <- function(dat, id = c(a, b, c)) {
-  aux <- dat[,-c(1, 2)]
-
-  d <- aux[, id]
-
-  grid <- expand.grid(x = id, y = id)
-  grid <- subset(grid, x != y)
-  all <- do.call("rbind", lapply(1:nrow(grid), function(i) {
-    xcol <- grid[i, "x"]
-    ycol <- grid[i, "y"]
-    data.frame(
-      Class = dat[, 1],
-      ids = dat[, 2],
-      x = dat[, xcol+2],
-      y = dat[, ycol+2],
-      pair = paste(grid[i, ], collapse = '-')
-    )
-  }))
-
-  all
-}
-
-#ppf PPforest object
-#V1,v2,v3 select the 3 proj directions
-ternarydata <- function(ppf, v1, v2, v3){
-  n.class <- ppf$train %>% select_(ppf$class.var) %>% unique() %>% nrow()
-  projct <- t(f.helmert(length(unique(ppf$train[, ppf$class.var])))[-1,])
-
-  dat3 <-
-    data.frame(
-      Class = ppf$train[, ppf$class.var],
-      ids = 1:nrow(ppf$train),
-      proj.vote = as.matrix(ppf$votes) %*% projct
-    )
-
-  ##with 3 or less classes
-  empt <- rep(1:nrow(dat3), 3)
-  #dat3.empt <- dat3[empt, ] %>% mutate(rep = rep(1:3, each = nrow(dat3)))
-  if (n.class > 3) {
-    gg1 <-  makePairs(dat3, c(v1,  v2, v3))
-  }
-
-  gg1 <-  makePairs(dat3, id = c(v1, v2, v3))
-
-  return(gg1)
-}
-
-#need to run f_hermite
-f_composition <- function(data) {
-  d <- dim(data)[2]
-  hm <- f.helmert(d)
-  x <- data - matrix(1 / d, dim(data)[1], d)
-  return((x %*% t(hm))[,-1])
-}
-
-simplex <- function(p = 3) {
-  vert <- f_composition(diag(p + 1))
-  colnames(vert) <- paste0("d", 1:ncol(vert))
-
-  wires <-
-    do.call(expand.grid, list(c(1:nrow(vert)), c(1:nrow(vert))))
-
-  structure(list(points = vert,
-                 edges = wires[!(wires[, 1] == wires[, 2]),]))
-}
-
-##ternary plot
-ternaryshell <- function(ppf, sp = 3, dx = 1, dy = 2, v1=1, v2=2, v3=3, leg=FALSE){
-  
-  s <- simplex(sp)
-  pts <- data.frame(s$points)
-  #pts <- data.frame(s$points[,c(dx,dy)])
-  gg1 <- ternarydata(ppf, v1, v2, v3)
-  levels(gg1$Class) <- c("BF", "BM", "OF", "OM")
-  
-  edg <- data.frame(x1=pts[,dx][s$edges[,1]], x2=pts[,dx][s$edg[,2]],
-                    y1=pts[,dy][s$edg[,1]], y2=pts[,dy][s$edg[,2]])
-if(leg==FALSE){
-  p1  <- gg1 %>% filter(pair %in% paste(dx,dy, sep="-") ) %>%
-    select(Class, x, y) %>%
-    ggplot(aes(x, y, color = Class)) +
-      geom_segment(data = edg, aes(x = x1, xend = x2,
-                                 y = y1, yend = y2), color = "black" ) +
-      geom_point(size = I(3), alpha = .5) +
-      labs(y = "",  x = "") +
-      theme(legend.position = "none", aspect.ratio = 1) +
-      scale_colour_brewer(type = "qual", palette = "Dark2") +
-      labs(x = paste0("T",dx,""), y = paste0("T",dy,"")) +
-    theme(aspect.ratio=1)
-}else{
-    p1  <- gg1 %>% filter(pair %in% paste(dx,dy, sep="-") ) %>%
-    select(Class, x, y) %>%
-    ggplot(aes(x, y, color = Class)) +
-      geom_segment(data = edg, aes(x = x1, xend = x2,
-                                 y = y1, yend = y2), color = "black" ) +
-      geom_point(size = I(3), alpha = .5) +
-      labs(y = "",  x = "") +
-      theme(legend.position = "bottom", aspect.ratio = 1) +
-      scale_colour_brewer(type = "qual", palette = "Dark2") +
-      labs(x = paste0("T",dx,""), y = paste0("T",dy,"")) +
-    theme(aspect.ratio=1)
-}
-  p1
-}
-t1 <- ternaryshell(ppf, 3, 1, 2,leg=TRUE)
-t2 <- ternaryshell(ppf, 3, 1, 3, leg=TRUE)
-t3 <- ternaryshell(ppf, 3, 2, 3,leg=TRUE)
-
-
-t1+t2+t3+plot_layout(guides = "collect") &
-  theme(legend.position='bottom')
-#vimeoternary fish code
-# library(colorspace)
-# library(RColorBrewer)
-# library(tourr)
-# projct <- t(f.helmert(7)[-1,] )
-#
-# dat7 <- data.frame(class=ppf[[1]], ppf$votes%*%projct)
-# colnames(dat7)[-1] <- paste("x", 1:7,sep="")
-# pal <- brewer.pal(7,"Dark2")
-# col <- pal[as.numeric(dat7[, 1])]
-#
-# edges <- rbind(c(1,0,0,0,0,0,0), c(0,1,0,0,0,0,0), c(0,0,1,0,0,0,0), c(0,0,0,1,0,0,0),
-#                c(0,0,0,0,1,0,0), c(0,0,0,0,0,1,0),c(0,0,0,0,0,0,1) )%*%projct
-# colnames(edges) <- colnames(dat7)[-1]
-# dd7 <- rbind(dat7, data.frame(class=levels(dat7$class),edges ))
-#
-# x11()
-# animate_xy(dd7[,2:7], col = col, pch=19,axes ="off", edges=as.matrix(expand.grid(160:166,160:166) )[c(2:7,10:14,18:21, 26:28,34:35,42),])
-#
-
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{ternary-1} 
+\end{knitrout}
 \caption{Generalized ternary plot ((G-1) dimensional simplex, in this case a tetrahedron) representation of the vote matrix for four classes. The tetrahedron is shown pairwise. Each point corresponds to one observation and color is the true class. This is close but not a perfect classification since the colors are concentrated in the corners and there are some mixed colors in each corner.}
 \label{tetra}
 \end{figure}
@@ -888,33 +311,10 @@ Because visualizing the vote matrix with a $(G-1)$ dimensional tetrahedron requi
 
 \begin{figure}[hbpt]
 \centering
-<<side, echo=FALSE, warning=FALSE, message=FALSE, fig.height=5,fig.width=5>>=
-
-#side-by siede boxplot
-side <-  function(ppf, ang = 0, lege = "bottom", siz = 2.5,
-                  ttl = "Side by side dotplot") {
-  voteinf <- data.frame(ids = 1:length(ppf$train[, 1]), Type = ppf$train[, 1],
-                      ppf$votes, pred = ppf$prediction.oob ) %>%
-  gather(Class, Probability, -pred, -ids, -Type)
-
-  levels(voteinf$Type) <- c("BF", "BM", "OF", "OM")
-  levels(voteinf$pred) <- c("BF", "BM", "OF", "OM")
-  voteinf$Class <- as.factor(voteinf$Class)
-  levels(voteinf$Class) <- c("BF", "BM", "OF", "OM")
-
-  ggplot(data = voteinf, aes(Class, Probability, color = Type)) +
-    geom_jitter(height = 0, size = I(siz), alpha = .5) +
-    ggtitle(ttl) +
-    scale_colour_brewer(type = "qual", palette = "Dark2") +
-    theme(legend.position = lege, legend.text=element_text(angle = ang, size =8),
-legend.title = element_text(size=8)) +
-    labs(colour = "Class", y = "Proportion")
-}
-
-
-side(ppf, ttl="")
-
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{side-1} 
+\end{knitrout}
 \caption{Another representation of the vote matrix, as a jittered side-by-side dotplot. It is not as elegant as the ternary plot, but it is useful because it places focus on each group. Each dotplot shows the proportion of times the case was predicted into the group, with 1 indicating that the case was always predicted to the group and 0 being never. On each dotplot, a single color dominates the top, indicating fairly clear distinctions between classes. Crabs from the B species, both male and female, have more uncertainty in predictions, as seen by more crabs from other classes having higher vote proportions than is seen in the O species.}
 \label{sideby}
 \end{figure}
@@ -938,7 +338,7 @@ The plots in the tab are (1) a parallel coordinate plot (PCP) of the data, (2) t
 The diagram in Figure \ref{tab1diag} illustrates the data pipeline \citep{BAHM88,wickham2009plumbing} for the interactive graphics in the case level tab.
 \begin{figure}[hbpt]
 \centering
-\includegraphics[width=1\linewidth]{figure/fishT1.pdf}
+\includegraphics[width=1\linewidth]{fishT1.pdf}
 \caption{Schematic diagram illustrating the interactivity in and between plots for individual level exploration panel of the web app. From the data, the four plots are generated. Each plot has a listener attached which collects user actions. When a user selects a point or line in any of the displays, it makes a change in the data which propagates updates to each of the plots.}
 \label{tab1diag}
 \end{figure}
@@ -950,7 +350,7 @@ Two alternatives can be selected in shiny to draw the parallel coordinate plot: 
 
 \begin{figure}[hbpt]
 \centering
-\includegraphics[width=1.05\linewidth]{figure/fish11.png}
+\includegraphics[width=1.05\linewidth]{fish11.png}
 \caption{Entry page for the web app, focusing on examining cases, in terms of similarity and uncertainty. The top plot shows the data, the remaining plots show similarity of cases and uncertainty in predictions. All of the plots are linked so that selecting elements of one will generate changes in the others. \label{tab1}}
 \end{figure}
 
@@ -959,7 +359,7 @@ Figure \ref{tab1comp} shows the arrangement of plots in this first tab for selec
 
 \begin{figure}[hbpt]
 \centering
-\includegraphics[width=1.1\linewidth]{figure/tab1com2.png}
+\includegraphics[width=1.1\linewidth]{tab1com2.png}
 \caption{Entry page for the web app, focusing on examining cases, for selected points.  \label{tab1comp}}
 \end{figure}
 
@@ -976,7 +376,7 @@ The selected tree in Figure \ref{tab2} has a very small OOB error shown as a red
 
 \begin{figure}[hbpt]
 \centering
-\includegraphics[width=1.1\linewidth]{figure/tab2comp.png}
+\includegraphics[width=1.1\linewidth]{tab2comp.png}
 \caption{The individual model tab in the web app. The OOB error is displayed in a boxplot  including jittered points for all trees in the forest. Variable importance is displayed as jittered dot plots for selected nodes of all trees. The boxplot is linked to a display of the PPTree, the variable importance plot, and a density plot of the data projections showing splits at each selected node and confusion tables as mosaic plots. Clicking a point in the OOB error boxplot triggers various updates: each of the importance values for the same tree are highlighted (red), the tree that this corresponds to is drawn, the error for the tree is shown on the boxplot (in red), and the density plot and the mosaic plot are also updated. Also specific nodes can be selected to update the plots.  \label{tab2}}
 \end{figure}
 
@@ -986,7 +386,7 @@ The data source is a \verb#PPforest# object. Interaction is driven in different 
 
 \begin{figure}[hbpt]
 \centering
-\includegraphics[width=1.05\linewidth]{figure/fishT2.pdf}
+\includegraphics[width=1.05\linewidth]{fishT2.pdf}
 \caption{Schematic diagram illustrating the interactivity in and between plots for model level exploration panel of the web app. The boxplot and the dotplot of variable importance has click selection, which invokes changes of the corresponding displays. Selecting a point in the boxplot update the node tree information (Shiny Gui) and update all the plots for the three first nodes, also nodes can be selected and update the corresponding plots. Finally selecting a point in the importance variable plot makes a change in the data, which propagates the importance values for other variables in this tree to be highlighted (red), draws the tree, highlights the error value of the tree, and shows the projections and confusion matrix for the three top nodes.}
 \label{tab2diag}
 \end{figure}
@@ -1000,7 +400,7 @@ The third tab (Figure \ref{tab3}) examines the PPF fit and compares the result w
 The approach used for a multi-class ROC analysis in this article is called one-against-all \citep{allwein2000reducing}.
 
 \begin{figure}[hbpt]
-\includegraphics[width=1\linewidth]{figure/fish31.png}
+\includegraphics[width=1\linewidth]{fish31.png}
 \caption{Performance comparison tab of the web app. ROC curves displaying sensitivity against specificity for the classes are shown, along with the OOB error by the number of trees used to build the forest, and overall variable importance. Displays are shown for the PPF and RF, for comparison purposes. Users can select a class to focus on, using the text entry box. \label{tab3}}
 \end{figure}
 \newpage
