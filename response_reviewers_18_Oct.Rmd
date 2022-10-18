@@ -1,0 +1,38 @@
+---
+title: "Authors Response"
+output: pdf_document
+header-includes:  \usepackage{xcolor}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Our responses to Guest Editors are written in \textcolor{blue}{\textbf{blue}}.
+
+
+## Response to Guest Editors
+Please make a final review to comply with journal style as specified at https://www.springer.com/journal/180/submission-guidelines and consider the following comments:
+
+
+
+
+
+- You indicated that you added a color legend for Fig 5, but it does not appear in the manuscript. Make sure to include the most recent version of this figure.
+\textcolor{blue}{\textbf{Done}}
+
+\textbf{References:}
+
+
+- Cutler, A. and Breiman, L. (2011) is incomplete - provide additional details, e.g., a URL or publisher information \textcolor{blue}{\textbf{Done}}
+
+- Ditterich: Add editors (listed at https://link.springer.com/book/10.1007/3-540-45014-9) and cities: "Springer, Berlin, Heidelberg" \textcolor{blue}{\textbf{Done}}
+
+- capitalize "graphical Statistics" in the journal name in Lee, E.-K., Cook, D., Klinke, S., and Lumley, T. (2005) \textcolor{blue}{\textbf{Done}}
+
+- add the DOI for Quach: https://doi.org/10.26076/2b20-a0da \textcolor{blue}{\textbf{Done}}
+- for Sievert (2017), change the year to 2016 and add this URL: https://www.proquest.com/pagepdf/1918054818 \textcolor{blue}{\textbf{Done}}
+- add place of publication (city, state) for books and book chapters, e.g., for Sievert, C. (2020), Silva, C. and Ribeiro, B. (2016), Urbanek, S. (2008), Wickham, H. (2021) \textcolor{blue}{\textbf{Done}}
+- add editors for Urbanek, S. (2008) - see https://link.springer.com/book/10.1007/978-3-540-33037-0 [the web page lists them as authors, but these are the editors] \textcolor{blue}{\textbf{Done}}
+
+
